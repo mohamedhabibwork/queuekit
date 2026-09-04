@@ -36,6 +36,6 @@
   "devDependencies": {
     "@queue-kit/core": "workspace:^",
     "tsup": "^8.4.0",
-    "typescript": "^5.9.0"
+    "typescript": "^7.0.2"
   }
 }
