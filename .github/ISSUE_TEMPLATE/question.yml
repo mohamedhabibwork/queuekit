@@ -1,0 +1,17 @@
+name: Question
+description: Ask a question about @queue-kit/* (usage, design, contribution).
+title: "[question]: "
+labels: ["question"]
+assignees: []
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: input
+    id: context
+    attributes:
+      label: Code / context (link or snippet)

@@ -1,0 +1,76 @@
+version: 2
+
+# Dependabot — version updates + security updates.
+#
+# Note on "alerts" / "security updates": GitHub Dependabot alerts and the
+# auto-generated security PRs are repository settings, not file content —
+# enable them at:
+#   https://github.com/mohamedhabibwork/queuekit/settings/security-analysis
+#   https://github.com/mohamedhabibwork/queuekit/settings/code_security_and_analysis
+
+updates:
+  # Root dev tooling + every workspace package's deps.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+
+  # Per-workspace package — surfaces runtime/dev deps in @queue-kit/core
+  # and @queue-kit/memory separately. (pnpm-workspace-aware.)
+  - package-ecosystem: npm
+    directory: /packages/core
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "package: core"
+
+  - package-ecosystem: npm
+    directory: /packages/memory
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "package: memory"
+
+  # GitHub Actions — keep workflow step versions fresh.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    labels:
+      - "dependencies"
+      - "ci"

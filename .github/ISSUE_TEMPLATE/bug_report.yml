@@ -1,0 +1,82 @@
+name: Bug report
+description: Report a bug in @queue-kit/core, @queue-kit/memory, or any provider.
+title: "[bug]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please fill out the template below so we can
+        reproduce and fix it quickly.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package is affected?
+      description: Select the workspace package that has the bug.
+      options:
+        - "@queue-kit/core"
+        - "@queue-kit/memory"
+        - "Monorepo / build tooling"
+        - "Documentation"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: Output of `pnpm ls @queue-kit/core @queue-kit/memory --depth=0`
+      placeholder: "@queue-kit/core@0.1.0  @queue-kit/memory@0.1.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime
+      description: Which runtime are you on?
+      options:
+        - "Node.js (version: __)"
+        - "Bun (version: __)"
+        - "Deno (version: __)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Actual behaviour.
+      placeholder: |
+        Calling `await queue.send(...)` rejects with:
+        ```
+        Error: ...
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Expected behaviour.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Smallest possible snippet that triggers the bug.
+      render: ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / stack traces
+      render: ts

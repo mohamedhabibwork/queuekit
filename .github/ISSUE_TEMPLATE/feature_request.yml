@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest a feature for @queue-kit/core, a provider, or the monorepo.
+title: "[feat]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to propose a new feature. For concrete design
+        discussions (provider contracts, type-system rules, etc.) prefer
+        opening a Discussion or a draft PR.
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Which package?
+      options:
+        - "@queue-kit/core"
+        - "@queue-kit/memory"
+        - "New provider"
+        - "Monorepo / tooling"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The "why" — what users / use-cases does this unlock?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API
+      description: Sketch the proposed call sites, types, or CLI shape.
+      render: ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you look at? Why isn't this enough?
+
+  - type: textarea
+    id: breaking
+    attributes:
+      label: Breaking change?
+      description: If accepted, would this need a major version bump? Why?

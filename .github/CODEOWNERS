@@ -1,0 +1,23 @@
+# CODEOWNERS — required reviewers for the queuekit monorepo.
+# A PR cannot merge until the owners listed for the files it touches
+# have approved. Lines starting with `#` are comments.
+
+# Default owner: every file matches unless overridden below.
+*                                          @mohamedhabibwork
+
+# Publish / release workflows touch the npm token and registry
+# — require the project owner explicitly.
+/.github/workflows/publish.yml              @mohamedhabibwork
+/.github/workflows/release-please.yml      @mohamedhabibwork
+/release-please-config.json                 @mohamedhabibwork
+/.release-please-manifest.json              @mohamedhabibwork
+
+# Public API surface per package.
+/packages/core/src/                         @mohamedhabibwork
+/packages/core/package.json                 @mohamedhabibwork
+/packages/memory/src/                       @mohamedhabibwork
+/packages/memory/package.json               @mohamedhabibwork
+
+# Docs that are part of the public package or README surface.
+/README.md                                  @mohamedhabibwork
+/CONTRIBUTING.md                            @mohamedhabibwork
