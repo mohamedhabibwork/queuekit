@@ -47,6 +47,10 @@ jobs:
   parse-tag:
     name: Parse tag and validate workspace
     runs-on: ubuntu-latest
+    outputs:
+      package-name: ${{ steps.resolve.outputs.package-name }}
+      package-dir: ${{ steps.resolve.outputs.package-dir }}
+      version: ${{ steps.resolve.outputs.version }}
     steps:
       # Checkout is REQUIRED so the DIR existence check below sees
       # packages/<scope>/ on disk. We use the helper to set env vars
