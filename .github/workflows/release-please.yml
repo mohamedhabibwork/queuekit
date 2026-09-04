@@ -49,7 +49,7 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v5
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           config-file: release-please-config.json
@@ -59,6 +59,22 @@ jobs:
           # Release PR. node-workspace plugin (in config) auto-bumps
           # peer-dependencies across packages.
           release-type: node
+          # Token resolution:
+          #   - If RELEASE_PLEASE_TOKEN is set as a repo secret (a
+          #     classic PAT with `repo` scope, OR a fine-grained token
+          #     with Contents:write + Pull requests:write on this repo),
+          #     release-please uses it. A PAT bypasses GitHub's
+          #     "Allow GitHub Actions to create and approve pull
+          #     requests" repo setting requirement.
+          #   - Otherwise it falls back to the workflow's GITHUB_TOKEN,
+          #     which DOES require that repo setting to be enabled
+          #     (Settings -> Actions -> General -> Workflow permissions
+          #     -> "Allow GitHub Actions to create and approve pull
+          #     requests").
+          # The PAT path is preferable for unattended automation; the
+          # GITHUB_TOKEN path is fine for solo repos where you can flip
+          # the repo setting in the GitHub UI.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
       # When release-please creates a new tag (format
       # `@queue-kit/<scope>-v<version>`), the tag push fires
       # `.github/workflows/publish.yml` which handles the npm publish +

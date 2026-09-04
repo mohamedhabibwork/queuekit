@@ -204,6 +204,32 @@ package and commit with `chore(release): force <version> for <pkg>`.
   granular access token with `Read and write` for the `@queue-kit`
   scope at <https://www.npmjs.com/settings/~/tokens>.
 
+### release-please failed: "GitHub Actions is not permitted to create or approve pull requests"
+
+The repo setting that allows `GITHUB_TOKEN` to open PRs is OFF
+(by default for new repos). Fix either way:
+
+**(a) Easier — flip the repo setting (one-time):**
+
+1. Repo → Settings → Actions → General
+2. Under "Workflow permissions":
+   - Select "Read and write permissions"
+   - Check **"Allow GitHub Actions to create and approve pull requests"**
+3. Save. No workflow or secret changes needed; release-please will
+   pick this up on its next run.
+
+**(b) Harder — use a PAT (no repo setting required):**
+
+1. Create a classic PAT at <https://github.com/settings/tokens> with
+   the `repo` scope (or a fine-grained token with `Contents: write` +
+   `Pull requests: write` on this repo).
+2. Add it as a repo secret named `RELEASE_PLEASE_TOKEN`.
+3. The workflow picks it up via `secrets.RELEASE_PLEASE_TOKEN ||
+   github.token` — no further changes.
+
+The PAT path is preferable for unattended / multi-org setups; the
+repo setting is fine for solo repos.
+
 ### Wrong package detected
 
 `publish.yml` `detect-package` derives the package from the tag name.
