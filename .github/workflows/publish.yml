@@ -6,18 +6,18 @@ name: publish
 #   @queue-kit/<scope>-v<X.Y.Z>
 # e.g. `@queue-kit/core-v0.2.0`, `@queue-kit/memory-v0.1.1`.
 #
+# Each job that needs package information parses the tag inline rather
+# than relying on cross-job outputs, which have proven unreliable
+# (twice now: missing `outputs:` mapping, then `@`-in-name rendering
+# glitch on the publish job's `name:` field).
+#
 # Flow:
-#   1. parse-tag          — parse the tag into {package-name, dir, version}
-#                          and echo them on $GITHUB_STEP_SUMMARY + verify the
-#                          package directory exists. (Self-contained — does
-#                          NOT depend on outputs from a separate job, which
-#                          had cross-job propagation issues on tag pushes.)
-#   2. quality            — pnpm install + lint + typecheck + tests + build
+#   1. quality            — pnpm install + lint + typecheck + tests + build
 #                          (whole workspace, so peer-deps are sound)
-#   3. check-version      — tag matches the package's package.json version
-#   4. publish            — pnpm publish ONLY the matching package, with
+#   2. check-version      — tag matches the package's package.json version
+#   3. publish            — pnpm publish ONLY the matching package, with
 #                          provenance
-#   5. github-release     — idempotent guard against release-please having
+#   4. github-release     — idempotent guard against release-please having
 #                          already created the release
 #
 # Required secrets:
@@ -44,68 +44,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  parse-tag:
-    name: Parse tag and validate workspace
-    runs-on: ubuntu-latest
-    outputs:
-      package-name: ${{ steps.resolve.outputs.package-name }}
-      package-dir: ${{ steps.resolve.outputs.package-dir }}
-      version: ${{ steps.resolve.outputs.version }}
-    steps:
-      # Checkout is REQUIRED so the DIR existence check below sees
-      # packages/<scope>/ on disk. We use the helper to set env vars
-      # for downstream jobs (more robust than step.outputs across jobs).
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-      - name: Resolve package from tag
-        id: resolve
-        env:
-          REF_NAME: ${{ github.ref_name }}
-          INPUT_PACKAGE: ${{ inputs.package }}
-          INPUT_VERSION: ${{ inputs.version }}
-        run: |
-          set -euo pipefail
-
-          if [ -n "$INPUT_PACKAGE" ] && [ -n "$INPUT_VERSION" ]; then
-            # workflow_dispatch manual path
-            PKG="$INPUT_PACKAGE"
-            VER="$INPUT_VERSION"
-            DIR="packages/${PKG#@queue-kit/}"
-          else
-            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
-            TAG="$REF_NAME"
-            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
-            PKG="@queue-kit/$SCOPE"
-            VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
-            DIR="packages/$SCOPE"
-          fi
-
-          if [ ! -d "$DIR" ]; then
-            echo "::error::Resolved package directory does not exist: $DIR"
-            exit 1
-          fi
-
-          {
-            echo "package-name=$PKG"
-            echo "package-dir=$DIR"
-            echo "version=$VER"
-          } >> "$GITHUB_OUTPUT"
-
-          {
-            echo "## Publish target"
-            echo ""
-            echo "- **Package:** \`$PKG\`"
-            echo "- **Directory:** \`$DIR/\`"
-            echo "- **Version:** \`$VER\`"
-            echo "- **Trigger:** \`${REF_NAME}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "Resolved: $PKG @ $DIR v$VER"
-
   quality:
     name: Quality gate
-    needs: parse-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -133,47 +73,50 @@ jobs:
       - name: Build (entire workspace)
         run: pnpm build
 
-      - name: Package checks (publint)
-        env:
-          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
-        run: pnpm dlx publint "$PKG_DIR" --strict
-
   check-version:
-    name: Verify tag == package.json version
-    needs: parse-tag
+    name: Verify tag matches package.json version
+    needs: quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
       - name: Compare tag vs package.json
         env:
-          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
-          VERSION: ${{ needs.parse-tag.outputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          PKG_VERSION="$(node -p "require('./${PKG_DIR}/package.json').version")"
-          if [ "$PKG_VERSION" != "$VERSION" ]; then
-            echo "::error::Tag v$VERSION does not match ${PKG_DIR}/package.json version $PKG_VERSION"
+
+          if [ -n "$INPUT_PACKAGE" ] && [ -n "$INPUT_VERSION" ]; then
+            PKG="$INPUT_PACKAGE"
+            VER="$INPUT_VERSION"
+          else
+            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
+            TAG="$REF_NAME"
+            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
+            PKG="@queue-kit/$SCOPE"
+            VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
+          fi
+
+          DIR="packages/${PKG#@queue-kit/}"
+          PKG_VERSION="$(node -p "require('./${DIR}/package.json').version")"
+          if [ "$PKG_VERSION" != "$VER" ]; then
+            echo "::error::Tag v$VER does not match ${DIR}/package.json version $PKG_VERSION"
             exit 1
           fi
-          echo "OK: ${PKG_DIR} @ $PKG_VERSION matches tag v$VERSION"
+          echo "OK: ${DIR} @ $PKG_VERSION matches tag v$VER"
 
   publish:
-    # The job name intentionally avoids template-injected chars. GitHub
-    # Actions forbids `@`, `&`, `?`, `<`, `>`, and a few others in
-    # `name:` fields, and rendering the package scope (which contains
-    # `@`) would either truncate the name or, in the worst case, blank
-    # the workflow's expression context for downstream steps. Keep the
-    # name static — the actual package + version surface in the
-    # Parse tag and validate workspace job's step summary instead.
     name: Publish package to npm
     needs: [quality, check-version]
     if: >-
       ${{
         !cancelled() &&
         needs.quality.result == 'success' &&
-        (needs.check-version.result == 'success' || needs.check-version.result == 'skipped')
+        needs['check-version'].result == 'success'
       }}
     runs-on: ubuntu-latest
     permissions:
@@ -194,17 +137,60 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Parse tag and build matching package
+        id: parse
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$INPUT_PACKAGE" ] && [ -n "$INPUT_VERSION" ]; then
+            PKG="$INPUT_PACKAGE"
+            VER="$INPUT_VERSION"
+          else
+            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
+            TAG="$REF_NAME"
+            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
+            PKG="@queue-kit/$SCOPE"
+            VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
+          fi
+
+          DIR="packages/${PKG#@queue-kit/}"
+
+          if [ ! -d "$DIR" ]; then
+            echo "::error::Resolved package directory does not exist: $DIR"
+            exit 1
+          fi
+
+          {
+            echo "package-name=$PKG"
+            echo "package-dir=$DIR"
+            echo "version=$VER"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Publish target"
+            echo ""
+            echo "- **Package:** \`$PKG\`"
+            echo "- **Directory:** \`$DIR/\`"
+            echo "- **Version:** \`$VER\`"
+            echo "- **Trigger:** \`$REF_NAME\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Resolved: $PKG @ $DIR v$VER"
+
       - name: Build matching package
         env:
-          PKG_NAME: ${{ needs.parse-tag.outputs.package-name }}
+          PKG_NAME: ${{ steps.parse.outputs.package-name }}
         run: pnpm --filter "$PKG_NAME..." build
 
       - name: Publish to npm
         env:
-          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
-          PKG_NAME: ${{ needs.parse-tag.outputs.package-name }}
+          PKG_DIR: ${{ steps.parse.outputs.package-dir }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        working-directory: ${{ needs.parse-tag.outputs.package-dir }}
+        working-directory: ${{ steps.parse.outputs.package-dir }}
         run: |
           set -euo pipefail
           # --no-git-checks avoids pnpm's "Git not clean" failure when the
