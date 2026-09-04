@@ -17,7 +17,11 @@
     "lint": "eslint packages examples",
     "format": "prettier --write \"packages/*/src/**/*.ts\" \"packages/*/test/**/*.ts\" \"examples/**/*.ts\"",
     "bun:smoke": "bun examples/memory-basic.ts",
-    "clean": "pnpm -r exec rm -rf dist"
+    "clean": "pnpm -r exec rm -rf dist",
+    "release:check": "bash scripts/release-check.sh",
+    "release": "bash scripts/release.sh",
+    "release:check:core": "PKG=core bash scripts/release-check.sh",
+    "release:check:memory": "PKG=memory bash scripts/release-check.sh"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
