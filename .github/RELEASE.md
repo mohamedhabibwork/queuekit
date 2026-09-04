@@ -206,34 +206,55 @@ package and commit with `chore(release): force <version> for <pkg>`.
 
 ### npm publish 404 "Scope not found"
 
-The scope `@mohamedhabibwork` doesn't exist on registry.npmjs.org yet. npm
-returns a generic 404 with body `Scope not found`, which doesn't
-say "create the org first". `publish.yml` has a pre-flight step
-that probes `https://registry.npmjs.org/@mohamedhabibwork` and fails fast
-with an actionable error before calling `pnpm publish`.
+Two flavours of scope on npm:
 
-Fix — create the org (one-time, free for public packages):
+- **Personal scope (`@<npm-username>`)** — auto-exists for any
+  registered npm user. Verify with:
+  ```bash
+  curl -s -u "<username>:<token>" \
+    https://registry.npmjs.org/-/whoami
+  ```
+  If it returns `{"username":"<username>"}`, the publish will
+  succeed. publish.yml does NOT pre-flight personal scopes (the
+  modern registry API has no `/-/user/<name>` endpoint), so a
+  failed publish means the user account or the token's grants
+  are wrong, not the scope.
+
+- **Org scope (`@<org-name>`)** — the org must be created at
+  <https://www.npmjs.com/org/create> (one-time, free for unlimited
+  public packages). Once the org exists, `/-/org/<name>` returns
+  200 — that was the basis of the previous pre-flight probe (now
+  removed in favour of natural pnpm-publish error handling).
+
+### npm publish 404 "Scope not found" (org-specific legacy)
+
+If you ever see this on an org scope:
 
 1. Visit <https://www.npmjs.com/org/create>
-2. Name: `queue-kit` (npm scopes are namespace-only, so the
-   `@mohamedhabibwork` scope comes from this org name).
-3. Choose the **Free** tier (sufficient for unlimited public packages).
-4. Finish. The org exists immediately.
+2. Name: the org you want (`queue-kit`, etc.)
+3. Plan: Free
+4. Create. The org exists immediately.
 
-Then the publish run will succeed:
+### Optional: enable npm provenance (attestation)
 
-```
-✅ scope @mohamedhabibwork exists on registry.npmjs.org
-📦 @mohamedhabibwork/core@0.2.0 → https://registry.npmjs.org/
-+ @mohamedhabibwork/core@0.2.0
-```
+Without `--provenance`, publish.yml uses just `NPM_TOKEN`. With
+it, npm attaches a build-time attestation proving the package was
+built from this repo+workflow. To enable:
 
-If you want **provenance** (npm attestation that the package was
-built from this repo), also configure OIDC trusted publishing in
-the org settings at <https://www.npmjs.com/settings/queue-kit/profile>
-→ "Trusted Publisher" — point it at this GitHub repo and workflow.
-Once configured, `pnpm publish --provenance` will succeed without
-the `Skipped OIDC` warning.
+1. Publish once without provenance (the current state).
+2. Visit <https://www.npmjs.com/settings/<username-or-org>/profile>
+   → **Trusted Publishers** → **Add a Trusted Publisher**
+   - **Publisher:** GitHub Actions
+   - **Repository owner:** `mohamedhabibwork`
+   - **Repository name:** `queuekit`
+   - **Workflow filename:** `publish.yml`
+   - **Environment (optional):** leave blank
+3. Save.
+4. Re-add `--provenance` to the `pnpm publish` command in
+   `.github/workflows/publish.yml`.
+
+Subsequent publishes will get the `dist.provenance` attestation
+signed by sigstore.
 
 ### release-please failed: "GitHub Actions is not permitted to create or approve pull requests"
 

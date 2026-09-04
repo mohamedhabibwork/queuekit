@@ -196,7 +196,14 @@ jobs:
           # --no-git-checks avoids pnpm's "Git not clean" failure when the
           # tag was just pushed and the local checkout has no matching
           # commit yet.
-          pnpm publish --access=public --provenance --no-git-checks
+          #
+          # No --provenance flag: enabling it requires setting up npm
+          # Trusted Publisher for this GitHub repo+workflow at
+          # https://www.npmjs.com/settings/mohamedhabibwork/profile
+          # (Trusted Publishers > Add). Once configured, swap back to
+          # 'pnpm publish --access=public --provenance --no-git-checks'
+          # to attach a build-time attestation. See .github/RELEASE.md.
+          pnpm publish --access=public --no-git-checks
 
   github-release:
     name: GitHub release (idempotent guard)
