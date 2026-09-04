@@ -1,5 +1,14 @@
 # @queue-kit/core
 
+[![npm version](https://img.shields.io/npm/v/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
+[![npm downloads](https://img.shields.io/npm/dm/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
+[![License: MIT](https://img.shields.io/npm/l/@queue-kit/core)](./LICENSE)
+[![GitHub: @mohamedhabibwork](https://img.shields.io/badge/GitHub-@mohamedhabibwork-181717?logo=github&logoColor=white)](https://github.com/mohamedhabibwork)
+[![Node.js ≥ 20](https://img.shields.io/node/v/@queue-kit/core)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![CI](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml)
+[![Socket](https://badge.socket.dev/npm/package/@queue-kit/core)](https://socket.dev/npm/package/@queue-kit/core)
+
 Portable queue primitives for TypeScript with **typed native escape hatches** and **capability
 discovery**. Zero runtime dependencies, ESM-only, runs on Node, Bun and Deno.
 

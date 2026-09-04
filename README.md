@@ -1,5 +1,17 @@
 # Queue Kit
 
+[![@queue-kit/core version](https://img.shields.io/npm/v/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
+[![@queue-kit/memory version](https://img.shields.io/npm/v/@queue-kit/memory)](https://www.npmjs.com/package/@queue-kit/memory)
+[![@queue-kit/core downloads](https://img.shields.io/npm/dm/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
+[![Latest Release (monorepo)](https://img.shields.io/github/v/release/mohamedhabibwork/queuekit)](https://github.com/mohamedhabibwork/queuekit/releases/latest)
+[![License: MIT](https://img.shields.io/npm/l/@queue-kit/core)](./LICENSE)
+[![GitHub: @mohamedhabibwork](https://img.shields.io/badge/GitHub-@mohamedhabibwork-181717?logo=github&logoColor=white)](https://github.com/mohamedhabibwork)
+[![Node.js ≥ 20](https://img.shields.io/node/v/@queue-kit/core)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![CI](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml)
+[![release-please](https://github.com/mohamedhabibwork/queuekit/actions/workflows/release-please.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/release-please.yml)
+[![CodeQL](https://github.com/mohamedhabibwork/queuekit/actions/workflows/codeql.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/security/code-scanning)
+
 > Unified TypeScript queues across providers, without sacrificing native provider power.
 
 Queue Kit gives TypeScript applications one consistent API for working with multiple queue
