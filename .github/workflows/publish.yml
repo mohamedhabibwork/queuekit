@@ -186,6 +186,30 @@ jobs:
           PKG_NAME: ${{ steps.parse.outputs.package-name }}
         run: pnpm --filter "$PKG_NAME..." build
 
+      - name: "Pre-flight: verify npm scope exists"
+        env:
+          PKG_NAME: ${{ steps.parse.outputs.package-name }}
+        run: |
+          set -euo pipefail
+          # pnpm publish with --provenance requires the @scope to exist on
+          # npm. Without it, the API returns a generic 404 with body
+          # "Scope not found" that doesn't tell you to create the org.
+          # Probe the registry directly so the failure mode is clear.
+          SCOPE="${PKG_NAME#@}"   # @queue-kit/core -> queue-kit/core
+          SCOPE="${SCOPE%%/*}"    # queue-kit/core -> queue-kit
+          STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/-/v1/search?text=scope:${SCOPE}&size=1")"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::npm registry search failed (HTTP $STATUS). Registry unreachable?"
+            exit 1
+          fi
+          if ! curl -sf "https://registry.npmjs.org/@${SCOPE}" > /dev/null; then
+            echo "::error::npm scope @${SCOPE} does not exist on the registry."
+            echo "::error::Create the org first: https://www.npmjs.com/org/create"
+            echo "::error::(Required once per org. The NPM_TOKEN cannot create scopes.)"
+            exit 1
+          fi
+          echo "OK: scope @${SCOPE} exists on registry.npmjs.org"
+
       - name: Publish to npm
         env:
           PKG_DIR: ${{ steps.parse.outputs.package-dir }}
