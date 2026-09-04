@@ -11,6 +11,12 @@ See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for the commit format and
 [`.github/RELEASE.md`](../../.github/RELEASE.md) for the release process.
 
 <!-- markdownlint-disable MD024 -->
+## [0.2.0] - 2026-09-04
+
+### Features
+
+* add tryQueueKitError helper for narrowing Queue Kit errors ([0e7d65c](https://github.com/mohamedhabibwork/queuekit/commit/0e7d65c))
+
 ## [0.1.0] - 2026-09-04
 
 ### Features

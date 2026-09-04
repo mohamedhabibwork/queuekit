@@ -1,6 +1,6 @@
 {
   "name": "@queue-kit/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Unified TypeScript queue primitives across providers, with typed native escape hatches and capability discovery. Zero runtime dependencies.",
   "license": "MIT",
   "type": "module",
