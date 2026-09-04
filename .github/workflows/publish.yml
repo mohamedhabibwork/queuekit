@@ -195,20 +195,31 @@ jobs:
           # npm. Without it, the API returns a generic 404 with body
           # "Scope not found" that doesn't tell you to create the org.
           # Probe the registry directly so the failure mode is clear.
-          SCOPE="${PKG_NAME#@}"   # @mohamedhabibwork/core -> queue-kit/core
+          #
+          # Two flavours of scope on npm:
+          #   - ORG scope     (@queue-kit)           -> /-/org/<name>
+          #   - personal scope (@mohamedhabibwork)   -> /-/user/<name>
+          # Personal scopes auto-exist for any npm user; org scopes
+          # require the org to be created at https://www.npmjs.com/org/create.
+          SCOPE="${PKG_NAME#@}"   # @queue-kit/core -> queue-kit/core
           SCOPE="${SCOPE%%/*}"    # queue-kit/core -> queue-kit
-          STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/-/v1/search?text=scope:${SCOPE}&size=1")"
-          if [ "$STATUS" != "200" ]; then
-            echo "::error::npm registry search failed (HTTP $STATUS). Registry unreachable?"
-            exit 1
-          fi
-          if ! curl -sf "https://registry.npmjs.org/@${SCOPE}" > /dev/null; then
+
+          ORG_STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/-/org/${SCOPE}")"
+          USER_STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/-/user/${SCOPE}")"
+
+          if [ "$ORG_STATUS" = "200" ]; then
+            echo "OK: scope @${SCOPE} exists as npm org (HTTP $ORG_STATUS on /-/org/${SCOPE})"
+          elif [ "$USER_STATUS" = "200" ]; then
+            echo "OK: scope @${SCOPE} exists as npm user (HTTP $USER_STATUS on /-/user/${SCOPE})"
+          else
             echo "::error::npm scope @${SCOPE} does not exist on the registry."
-            echo "::error::Create the org first: https://www.npmjs.com/org/create"
-            echo "::error::(Required once per org. The NPM_TOKEN cannot create scopes.)"
+            echo "::error::Probed /-/org/${SCOPE} -> ${ORG_STATUS} and /-/user/${SCOPE} -> ${USER_STATUS}"
+            if [ "$SCOPE" != "mohamedhabibwork" ]; then
+              echo "::error::For an org scope: create the org first at https://www.npmjs.com/org/create"
+            fi
+            echo "::error::For a personal scope: log in as '${SCOPE}' on npm once (e.g. 'npm login') so the user account exists."
             exit 1
           fi
-          echo "OK: scope @${SCOPE} exists on registry.npmjs.org"
 
       - name: Publish to npm
         env:
