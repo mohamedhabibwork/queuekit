@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": true,
+  "draft": false,
+  "prerelease": false,
+  "include-v-in-tag": true,
+  "include-component-in-tag": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "include-commit-authors": false,
+  "pull-request-title-pattern": "chore(release${scope}): ${version}",
+  "labels": ["autorelease: pending"],
+  "release-labels": ["autorelease: tagged"],
+  "extra-labels": ["release"],
+  "plugins": [
+    {
+      "type": "node-workspace",
+      "update-peer-dependencies": true
+    }
+  ],
+  "packages": {
+    "packages/core": {
+      "release-type": "node",
+      "component": "@queue-kit/core",
+      "package-name": "@queue-kit/core",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-host": "https://github.com/mohamedhabibwork/queuekit",
+      "changelog-sections": [
+        { "type": "feat",     "section": "Features",      "hidden": false },
+        { "type": "feature",  "section": "Features",      "hidden": false },
+        { "type": "fix",      "section": "Bug Fixes",     "hidden": false },
+        { "type": "perf",     "section": "Performance",   "hidden": false },
+        { "type": "revert",   "section": "Reverts",       "hidden": false },
+        { "type": "docs",     "section": "Documentation", "hidden": false },
+        { "type": "refactor", "section": "Refactors",     "hidden": false },
+        { "type": "test",     "section": "Tests",         "hidden": false },
+        { "type": "build",    "section": "Build System",  "hidden": false },
+        { "type": "ci",       "section": "CI/CD",         "hidden": false },
+        { "type": "chore",    "section": "Miscellaneous", "hidden": false },
+        { "type": "style",    "section": "Styles",        "hidden": true  }
+      ]
+    },
+    "packages/memory": {
+      "release-type": "node",
+      "component": "@queue-kit/memory",
+      "package-name": "@queue-kit/memory",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-host": "https://github.com/mohamedhabibwork/queuekit",
+      "changelog-sections": [
+        { "type": "feat",     "section": "Features",      "hidden": false },
+        { "type": "feature",  "section": "Features",      "hidden": false },
+        { "type": "fix",      "section": "Bug Fixes",     "hidden": false },
+        { "type": "perf",     "section": "Performance",   "hidden": false },
+        { "type": "revert",   "section": "Reverts",       "hidden": false },
+        { "type": "docs",     "section": "Documentation", "hidden": false },
+        { "type": "refactor", "section": "Refactors",     "hidden": false },
+        { "type": "test",     "section": "Tests",         "hidden": false },
+        { "type": "build",    "section": "Build System",  "hidden": false },
+        { "type": "ci",       "section": "CI/CD",         "hidden": false },
+        { "type": "chore",    "section": "Miscellaneous", "hidden": false },
+        { "type": "style",    "section": "Styles",        "hidden": true  }
+      ]
+    }
+  }
+}

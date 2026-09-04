@@ -1,0 +1,65 @@
+name: release-please
+
+# Automated release management for the @queue-kit/* monorepo.
+#
+# What this workflow does:
+#   1. On every push to main, inspect Conventional Commits since the last
+#      release per workspace package.
+#   2. Open / update one Release PR per package that needs releasing, titled
+#      `chore(release@<scope>): <new-version>`. e.g.:
+#        - chore(release@core): 0.1.0 -> 0.2.0
+#        - chore(release@memory): 0.1.0 -> 0.1.1
+#      Each PR bumps the matching `packages/<name>/package.json`,
+#      appends a section to its `CHANGELOG.md`, and (via the node-workspace
+#      plugin with `update-peer-dependencies: true`) bumps any consumer's
+#      peer-dep that points at it (e.g. `@queue-kit/memory` re-pointing at
+#      the new `@queue-kit/core`).
+#   3. When a Release PR is merged, release-please pushes the tag
+#      `@queue-kit/<scope>-v<version>` and creates the GitHub Release.
+#   4. The tag push triggers `.github/workflows/publish.yml` which builds
+#      the entire workspace, then publishes ONLY the matching package.
+#
+# Why this exists:
+#   - Conventional Commit history -> automatic semver bump per package.
+#   - Single source of truth: package version, CHANGELOG, peer-dep, git
+#     tag, GitHub release all stay in lockstep — even across the
+#     core/memory split.
+#   - Releases are reviewable (the Release PR is a normal PR) instead of
+#     fire-and-forget `pnpm version && git push --follow-tags`.
+#
+# Required permissions: see `permissions:` below. The default GITHUB_TOKEN
+# is enough — no PAT needed for release-please itself.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write       # push commits and tags
+  issues: write         # open / close release issues
+  pull-requests: write  # open / update the Release PR
+  id-token: write       # npm provenance (future)
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          # node release-type tells release-please to read each
+          # package.json's version and write it back as part of the
+          # Release PR. node-workspace plugin (in config) auto-bumps
+          # peer-dependencies across packages.
+          release-type: node
+      # When release-please creates a new tag (format
+      # `@queue-kit/<scope>-v<version>`), the tag push fires
+      # `.github/workflows/publish.yml` which handles the npm publish +
+      # GitHub release guard.
