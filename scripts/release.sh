@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/release.sh
 # -----------------------------------------------------------------------------
-# Manual release helper for a single package in the @queue-kit/* monorepo.
+# Manual release helper for a single package in the @mohamedhabibwork/* monorepo.
 # The escape hatch for the release-please flow.
 #
 # Usage:
@@ -10,10 +10,10 @@
 #   ./scripts/release.sh <pkg> major                        # 0.1.0 -> 1.0.0
 #   ./scripts/release.sh <pkg> 1.4.2                        # explicit version
 #
-#   <pkg> = core | memory | @queue-kit/core | @queue-kit/memory
+#   <pkg> = core | memory | @mohamedhabibwork/core | @mohamedhabibwork/memory
 #
 # After this script exits cleanly, .github/workflows/publish.yml picks up the
-# @queue-kit/<scope>-v<X.Y.Z> tag and runs pnpm publish for that single package.
+# @mohamedhabibwork/<scope>-v<X.Y.Z> tag and runs pnpm publish for that single package.
 #
 # IMPORTANT — after a manual release, sync the release-please manifest so it
 # doesn't open a "catch-up" Release PR on the next push:
@@ -51,9 +51,9 @@ bump="$2"
 
 # Normalise package name to scope
 case "$raw_pkg" in
-  core|@queue-kit/core)    scope="core";    pkg="@queue-kit/core"    ;;
-  memory|@queue-kit/memory) scope="memory"; pkg="@queue-kit/memory"  ;;
-  *) die "unknown package '$raw_pkg' — expected core | memory | @queue-kit/core | @queue-kit/memory" ;;
+  core|@mohamedhabibwork/core)    scope="core";    pkg="@mohamedhabibwork/core"    ;;
+  memory|@mohamedhabibwork/memory) scope="memory"; pkg="@mohamedhabibwork/memory"  ;;
+  *) die "unknown package '$raw_pkg' — expected core | memory | @mohamedhabibwork/core | @mohamedhabibwork/memory" ;;
 esac
 
 dir="packages/$scope"
@@ -83,7 +83,7 @@ step "pushing commit + tag"
 git push --follow-tags
 ok "pushed"
 
-printf "\n${c_grn}✓ Released @queue-kit/%s v%s.${c_off}\n" "$scope" "$new_version"
+printf "\n${c_grn}✓ Released @mohamedhabibwork/%s v%s.${c_off}\n" "$scope" "$new_version"
 printf "  publish.yml will run quality + check-version + pnpm publish.\n"
 printf "  After publish, sync .release-please-manifest.json so release-please\n"
 printf "  starts from the new version on its next run.\n"

@@ -1,5 +1,5 @@
 {
-  "name": "@queue-kit/memory",
+  "name": "@mohamedhabibwork/memory",
   "version": "0.1.0",
   "description": "In-memory Queue Kit provider for tests, examples and local development. Deterministic with FakeClock.",
   "license": "MIT",
@@ -31,10 +31,10 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@queue-kit/core": "workspace:^"
+    "@mohamedhabibwork/core": "workspace:^"
   },
   "devDependencies": {
-    "@queue-kit/core": "workspace:^",
+    "@mohamedhabibwork/core": "workspace:^",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2"
   }

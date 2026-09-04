@@ -1,4 +1,4 @@
-import { createId, type Clock, type QueueEnvelope, type QueueRef, type QueueSize } from "@queue-kit/core";
+import { createId, type Clock, type QueueEnvelope, type QueueRef, type QueueSize } from "@mohamedhabibwork/core";
 
 interface StoredMessage {
   messageId: string;

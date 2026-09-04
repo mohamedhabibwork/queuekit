@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { createQueue, defineJob, FakeClock, QueueTimeoutError, type QueueWorker } from "@queue-kit/core";
+import { createQueue, defineJob, FakeClock, QueueTimeoutError, type QueueWorker } from "@mohamedhabibwork/core";
 import { memory } from "../src/index";
-import { captureJobs, waitForQueueEvent, waitForWorkerEvent } from "@queue-kit/core/testing";
+import { captureJobs, waitForQueueEvent, waitForWorkerEvent } from "@mohamedhabibwork/core/testing";
 
 function setup(name = "emails") {
   const clock = new FakeClock();

@@ -1,6 +1,6 @@
-# Changelog — @queue-kit/core
+# Changelog — @mohamedhabibwork/core
 
-All notable changes to `@queue-kit/core` are documented here.
+All notable changes to `@mohamedhabibwork/core` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -50,7 +50,7 @@ See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for the commit format and
   makes all delayed messages visible without real sleeping.
 - **`JsonSerializer`** + pluggable encoder/decoder hook for non-JSON
   payloads.
-- **Testing utilities** under `@queue-kit/core/testing`:
+- **Testing utilities** under `@mohamedhabibwork/core/testing`:
   `captureJobs`, `waitForQueueEvent`, `waitForWorkerEvent`.
 - **`createQueueRegistry`**: named-queue lookup so workers across processes
   share a single source of truth.

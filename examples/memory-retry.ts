@@ -4,8 +4,8 @@
  *
  * Run with: bun examples/memory-retry.ts
  */
-import { createQueue, defineJob, FakeClock } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory";
+import { createQueue, defineJob, FakeClock } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory";
 
 const clock = new FakeClock();
 const queue = createQueue({ name: "payments", provider: memory({ clock }) });

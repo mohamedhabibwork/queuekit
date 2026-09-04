@@ -1,6 +1,6 @@
-# Changelog — @queue-kit/memory
+# Changelog — @mohamedhabibwork/memory
 
-All notable changes to `@queue-kit/memory` are documented here.
+All notable changes to `@mohamedhabibwork/memory` are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
@@ -42,7 +42,7 @@ See [`CONTRIBUTING.md`](../../CONTRIBUTING.md) for the commit format and
 
 ### Dependency
 
-- `peerDependencies."@queue-kit/core": "workspace:^"` (resolved to
+- `peerDependencies."@mohamedhabibwork/core": "workspace:^"` (resolved to
   `^0.1.0` at publish).
 
 [0.1.0]: https://github.com/mohamedhabibwork/queuekit/releases/tag/%40queue-kit%2Fmemory-v0.1.0

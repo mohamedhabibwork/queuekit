@@ -12,7 +12,7 @@
 #   3. `origin/main` is reachable and we are up to date with it.
 #   4. For each publishable package:
 #      - `.release-please-manifest.json` agrees with `package.json` version.
-#      - `package.json`'s "version" matches the latest matching `@queue-kit/<pkg>-vX.Y.Z` tag
+#      - `package.json`'s "version" matches the latest matching `@mohamedhabibwork/<pkg>-vX.Y.Z` tag
 #        (if release-please already shipped one).
 #   5. Workspace quality gate: pnpm install + lint + typecheck + tests + build.
 #
@@ -31,7 +31,7 @@ step() { printf "\n${c_yel}▶ %s${c_off}\n" "$*"; }
 ok()   { printf "${c_grn}  ok${c_off}  %s\n" "$*"; }
 die()  { printf "${c_red}  fail${c_off} %s\n" "$*" >&2; exit 1; }
 
-PKG="${PKG:-}"   # optional single-package filter (memory | core | @queue-kit/memory | @queue-kit/core)
+PKG="${PKG:-}"   # optional single-package filter (memory | core | @mohamedhabibwork/memory | @mohamedhabibwork/core)
 
 # 1. Clean tree
 step "working tree clean"
@@ -75,15 +75,15 @@ echo "$publish_pkgs" | while IFS='|' read -r dir pkg_name; do
   [ "$manifest_version" = "$pkg_version" ] \
     || die "${dir}/package.json ($pkg_version) ≠ .release-please-manifest.json ($manifest_version)"
 
-  pkg_scope="${pkg_name#@queue-kit/}"
-  latest_tag="$(git tag --list "@queue-kit/${pkg_scope}-v*" --sort=-version:refname | head -n1 || true)"
+  pkg_scope="${pkg_name#@mohamedhabibwork/}"
+  latest_tag="$(git tag --list "@mohamedhabibwork/${pkg_scope}-v*" --sort=-version:refname | head -n1 || true)"
   if [ -n "$latest_tag" ]; then
-    tag_version="${latest_tag#@queue-kit/${pkg_scope}-v}"
+    tag_version="${latest_tag#@mohamedhabibwork/${pkg_scope}-v}"
     [ "$pkg_version" = "$tag_version" ] \
       || die "${dir}/package.json ($pkg_version) ≠ $latest_tag ($tag_version)"
     ok "$pkg_name ($pkg_version) matches manifest and $latest_tag"
   else
-    ok "$pkg_name ($pkg_version) matches manifest; no @queue-kit/${pkg_scope}-v* tag yet"
+    ok "$pkg_name ($pkg_version) matches manifest; no @mohamedhabibwork/${pkg_scope}-v* tag yet"
   fi
 done
 

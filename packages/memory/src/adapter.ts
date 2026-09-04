@@ -11,7 +11,7 @@ import {
   type HealthReport,
   type QueueSize,
   type SendResult,
-} from "@queue-kit/core";
+} from "@mohamedhabibwork/core";
 import { MemoryBroker, type DeliveredMessage } from "./broker";
 import type { MemoryReceipt, MemorySendNativeResult, MemoryTypes } from "./types";
 

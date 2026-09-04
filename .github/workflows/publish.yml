@@ -1,10 +1,10 @@
 name: publish
 
-# Tag-driven npm publish for the @queue-kit/* monorepo.
+# Tag-driven npm publish for the @mohamedhabibwork/* monorepo.
 #
 # Triggered by release-please pushing a tag of the form
-#   @queue-kit/<scope>-v<X.Y.Z>
-# e.g. `@queue-kit/core-v0.2.0`, `@queue-kit/memory-v0.1.1`.
+#   @mohamedhabibwork/<scope>-v<X.Y.Z>
+# e.g. `@mohamedhabibwork/core-v0.2.0`, `@mohamedhabibwork/memory-v0.1.1`.
 #
 # Each job that needs package information parses the tag inline rather
 # than relying on cross-job outputs, which have proven unreliable
@@ -21,17 +21,17 @@ name: publish
 #                          already created the release
 #
 # Required secrets:
-#   - NPM_TOKEN  — granular token with publish rights on @queue-kit
+#   - NPM_TOKEN  — granular token with publish rights on @mohamedhabibwork
 #                  (Settings -> Secrets and variables -> Actions)
 
 on:
   push:
     tags:
-      - '@queue-kit/*-v*'
+      - '@mohamedhabibwork/*-v*'
   workflow_dispatch:
     inputs:
       package:
-        description: 'Package to publish (e.g. @queue-kit/core). Leave empty for tag-driven mode.'
+        description: 'Package to publish (e.g. @mohamedhabibwork/core). Leave empty for tag-driven mode.'
         required: false
         type: string
       version:
@@ -94,14 +94,14 @@ jobs:
             PKG="$INPUT_PACKAGE"
             VER="$INPUT_VERSION"
           else
-            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
+            # tag path: "@mohamedhabibwork/<scope>-v<X.Y.Z>"
             TAG="$REF_NAME"
-            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
-            PKG="@queue-kit/$SCOPE"
+            SCOPE="$(echo "$TAG" | sed -E 's/@mohamedhabibwork\/([a-z0-9._-]+)-v[0-9].*/\1/')"
+            PKG="@mohamedhabibwork/$SCOPE"
             VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
           fi
 
-          DIR="packages/${PKG#@queue-kit/}"
+          DIR="packages/${PKG#@mohamedhabibwork/}"
           PKG_VERSION="$(node -p "require('./${DIR}/package.json').version")"
           if [ "$PKG_VERSION" != "$VER" ]; then
             echo "::error::Tag v$VER does not match ${DIR}/package.json version $PKG_VERSION"
@@ -150,14 +150,14 @@ jobs:
             PKG="$INPUT_PACKAGE"
             VER="$INPUT_VERSION"
           else
-            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
+            # tag path: "@mohamedhabibwork/<scope>-v<X.Y.Z>"
             TAG="$REF_NAME"
-            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
-            PKG="@queue-kit/$SCOPE"
+            SCOPE="$(echo "$TAG" | sed -E 's/@mohamedhabibwork\/([a-z0-9._-]+)-v[0-9].*/\1/')"
+            PKG="@mohamedhabibwork/$SCOPE"
             VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
           fi
 
-          DIR="packages/${PKG#@queue-kit/}"
+          DIR="packages/${PKG#@mohamedhabibwork/}"
 
           if [ ! -d "$DIR" ]; then
             echo "::error::Resolved package directory does not exist: $DIR"
@@ -195,7 +195,7 @@ jobs:
           # npm. Without it, the API returns a generic 404 with body
           # "Scope not found" that doesn't tell you to create the org.
           # Probe the registry directly so the failure mode is clear.
-          SCOPE="${PKG_NAME#@}"   # @queue-kit/core -> queue-kit/core
+          SCOPE="${PKG_NAME#@}"   # @mohamedhabibwork/core -> queue-kit/core
           SCOPE="${SCOPE%%/*}"    # queue-kit/core -> queue-kit
           STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://registry.npmjs.org/-/v1/search?text=scope:${SCOPE}&size=1")"
           if [ "$STATUS" != "200" ]; then

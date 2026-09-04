@@ -6,8 +6,8 @@
  *   node --experimental-strip-types examples/memory-basic.ts
  *   deno run -A examples/memory-basic.ts   (with node_modules installed)
  */
-import { createQueue, defineJob, type QueueJob } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory";
+import { createQueue, defineJob, type QueueJob } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory";
 
 // 1. Define a reusable, typed job — the contract between producer and worker.
 interface EmailPayload {

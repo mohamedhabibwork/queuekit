@@ -25,8 +25,8 @@ updates:
     labels:
       - "dependencies"
 
-  # Per-workspace package — surfaces runtime/dev deps in @queue-kit/core
-  # and @queue-kit/memory separately. (pnpm-workspace-aware.)
+  # Per-workspace package — surfaces runtime/dev deps in @mohamedhabibwork/core
+  # and @mohamedhabibwork/memory separately. (pnpm-workspace-aware.)
   - package-ecosystem: npm
     directory: /packages/core
     schedule:

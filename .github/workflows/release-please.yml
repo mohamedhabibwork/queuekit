@@ -1,6 +1,6 @@
 name: release-please
 
-# Automated release management for the @queue-kit/* monorepo.
+# Automated release management for the @mohamedhabibwork/* monorepo.
 #
 # What this workflow does:
 #   1. On every push to main, inspect Conventional Commits since the last
@@ -12,10 +12,10 @@ name: release-please
 #      Each PR bumps the matching `packages/<name>/package.json`,
 #      appends a section to its `CHANGELOG.md`, and (via the node-workspace
 #      plugin with `update-peer-dependencies: true`) bumps any consumer's
-#      peer-dep that points at it (e.g. `@queue-kit/memory` re-pointing at
-#      the new `@queue-kit/core`).
+#      peer-dep that points at it (e.g. `@mohamedhabibwork/memory` re-pointing at
+#      the new `@mohamedhabibwork/core`).
 #   3. When a Release PR is merged, release-please pushes the tag
-#      `@queue-kit/<scope>-v<version>` and creates the GitHub Release.
+#      `@mohamedhabibwork/<scope>-v<version>` and creates the GitHub Release.
 #   4. The tag push triggers `.github/workflows/publish.yml` which builds
 #      the entire workspace, then publishes ONLY the matching package.
 #
@@ -76,6 +76,6 @@ jobs:
           # the repo setting in the GitHub UI.
           token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
       # When release-please creates a new tag (format
-      # `@queue-kit/<scope>-v<version>`), the tag push fires
+      # `@mohamedhabibwork/<scope>-v<version>`), the tag push fires
       # `.github/workflows/publish.yml` which handles the npm publish +
       # GitHub release guard.

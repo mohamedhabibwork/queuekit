@@ -3,3 +3,7 @@ dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
+
+# Tooling caches
+.playwright-mcp/
+.opencode/

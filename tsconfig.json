@@ -4,9 +4,9 @@
     "types": ["node"],
     "noEmit": true,
     "paths": {
-      "@queue-kit/core": ["./packages/core/src/index.ts"],
-      "@queue-kit/core/testing": ["./packages/core/src/testing.ts"],
-      "@queue-kit/memory": ["./packages/memory/src/index.ts"]
+      "@mohamedhabibwork/core": ["./packages/core/src/index.ts"],
+      "@mohamedhabibwork/core/testing": ["./packages/core/src/testing.ts"],
+      "@mohamedhabibwork/memory": ["./packages/memory/src/index.ts"]
     }
   },
   "include": [
