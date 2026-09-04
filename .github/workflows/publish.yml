@@ -48,6 +48,13 @@ jobs:
       package-dir: ${{ steps.parse.outputs.package-dir }}
       version: ${{ steps.parse.outputs.version }}
     steps:
+      # Checkout is REQUIRED here so the DIR existence check below sees
+      # packages/<scope>/ on disk. Without it the job runs in an empty
+      # workspace and always errors with "Resolved package directory
+      # does not exist".
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - id: parse
         env:
           REF_NAME: ${{ github.ref_name }}
