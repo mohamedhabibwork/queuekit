@@ -1,0 +1,201 @@
+name: publish
+
+# Tag-driven npm publish for the @queue-kit/* monorepo.
+#
+# Triggered by release-please pushing a tag of the form
+#   @queue-kit/<scope>-v<X.Y.Z>
+# e.g. `@queue-kit/core-v0.2.0`, `@queue-kit/memory-v0.1.1`.
+#
+# Flow:
+#   1. detect-package       — parse the tag into {package-name, dir, version}
+#   2. quality              — pnpm install + lint + typecheck + tests + build
+#                             (whole workspace, so peer-deps are sound)
+#   3. check-version        — tag matches the package's package.json version
+#   4. publish              — pnpm publish ONLY the matching package, with
+#                             provenance
+#   5. github-release       — idempotent guard against release-please having
+#                             already created the release
+#
+# Required secrets:
+#   - NPM_TOKEN  — granular token with publish rights on @queue-kit
+#                  (Settings -> Secrets and variables -> Actions)
+
+on:
+  push:
+    tags:
+      - '@queue-kit/*-v*'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish (e.g. @queue-kit/core). Leave empty for tag-driven mode.'
+        required: false
+        type: string
+      version:
+        description: 'Explicit version (e.g. 0.2.0). Leave empty for tag-driven mode.'
+        required: false
+        type: string
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  detect-package:
+    name: Detect package from tag
+    runs-on: ubuntu-latest
+    outputs:
+      package-name: ${{ steps.parse.outputs.package-name }}
+      package-dir: ${{ steps.parse.outputs.package-dir }}
+      version: ${{ steps.parse.outputs.version }}
+    steps:
+      - id: parse
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$INPUT_PACKAGE" ] && [ -n "$INPUT_VERSION" ]; then
+            # workflow_dispatch manual path
+            PKG="$INPUT_PACKAGE"
+            VER="$INPUT_VERSION"
+            DIR="packages/${PKG#@queue-kit/}"
+          else
+            # tag path: "@queue-kit/<scope>-v<X.Y.Z>"
+            TAG="$REF_NAME"
+            SCOPE="$(echo "$TAG" | sed -E 's/@queue-kit\/([a-z0-9._-]+)-v[0-9].*/\1/')"
+            PKG="@queue-kit/$SCOPE"
+            VER="$(echo "$TAG" | sed -E 's/.*-v(.*)/\1/')"
+            DIR="packages/$SCOPE"
+          fi
+
+          if [ ! -d "$DIR" ]; then
+            echo "::error::Resolved package directory does not exist: $DIR"
+            exit 1
+          fi
+
+          echo "package-name=$PKG"  >> "$GITHUB_OUTPUT"
+          echo "package-dir=$DIR"   >> "$GITHUB_OUTPUT"
+          echo "version=$VER"       >> "$GITHUB_OUTPUT"
+          echo "Resolved: $PKG @ $DIR v$VER"
+
+  quality:
+    name: Quality gate
+    needs: detect-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests (unit + contract + type-level)
+        run: pnpm test:types
+
+      - name: Build (entire workspace)
+        run: pnpm build
+
+      - name: Package checks (publint)
+        env:
+          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
+        run: pnpm dlx publint "$PKG_DIR" --strict
+
+  check-version:
+    name: Verify tag == package.json version
+    needs: detect-package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compare tag vs package.json
+        env:
+          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
+          VERSION: ${{ needs.detect-package.outputs.version }}
+        run: |
+          set -euo pipefail
+          PKG_VERSION="$(node -p "require('./${PKG_DIR}/package.json').version")"
+          if [ "$PKG_VERSION" != "$VERSION" ]; then
+            echo "::error::Tag v$VERSION does not match ${PKG_DIR}/package.json version $PKG_VERSION"
+            exit 1
+          fi
+          echo "OK: ${PKG_DIR} @ $PKG_VERSION matches tag v$VERSION"
+
+  publish:
+    name: Publish ${{ needs.detect-package.outputs.package-name }}@${{ needs.detect-package.outputs.version }}
+    needs: [quality, check-version]
+    if: >-
+      ${{
+        !cancelled() &&
+        needs.quality.result == 'success' &&
+        (needs.check-version.result == 'success' || needs.check-version.result == 'skipped')
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build package (and any workspace deps)
+        env:
+          PKG_NAME: ${{ needs.detect-package.outputs.package-name }}
+        run: pnpm --filter "$PKG_NAME..." build
+
+      - name: Publish to npm
+        env:
+          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ${{ needs.detect-package.outputs.package-dir }}
+        run: |
+          set -euo pipefail
+          # --no-git-checks avoids pnpm's "Git not clean" failure when the
+          # tag was just pushed by release-please and the local checkout
+          # has no matching commit yet.
+          pnpm publish --access=public --provenance --no-git-checks
+
+  github-release:
+    name: GitHub release (idempotent guard)
+    needs: [publish]
+    if: >-
+      ${{
+        !cancelled() &&
+        needs.publish.result == 'success'
+      }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure GitHub release exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG already exists (release-please created it); skipping."
+          else
+            gh release create "$TAG" --verify-tag --generate-notes
+          fi
