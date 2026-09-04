@@ -160,7 +160,14 @@ jobs:
           echo "OK: ${PKG_DIR} @ $PKG_VERSION matches tag v$VERSION"
 
   publish:
-    name: Publish ${{ needs.parse-tag.outputs.package-name }}@${{ needs.parse-tag.outputs.version }}
+    # The job name intentionally avoids template-injected chars. GitHub
+    # Actions forbids `@`, `&`, `?`, `<`, `>`, and a few others in
+    # `name:` fields, and rendering the package scope (which contains
+    # `@`) would either truncate the name or, in the worst case, blank
+    # the workflow's expression context for downstream steps. Keep the
+    # name static — the actual package + version surface in the
+    # Parse tag and validate workspace job's step summary instead.
+    name: Publish package to npm
     needs: [quality, check-version]
     if: >-
       ${{
