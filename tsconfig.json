@@ -3,11 +3,10 @@
   "compilerOptions": {
     "types": ["node"],
     "noEmit": true,
-    "baseUrl": ".",
     "paths": {
-      "@queue-kit/core": ["packages/core/src/index.ts"],
-      "@queue-kit/core/testing": ["packages/core/src/testing.ts"],
-      "@queue-kit/memory": ["packages/memory/src/index.ts"]
+      "@queue-kit/core": ["./packages/core/src/index.ts"],
+      "@queue-kit/core/testing": ["./packages/core/src/testing.ts"],
+      "@queue-kit/memory": ["./packages/memory/src/index.ts"]
     }
   },
   "include": [
