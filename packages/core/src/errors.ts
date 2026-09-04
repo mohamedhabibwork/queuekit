@@ -157,6 +157,31 @@ export function fatal(error: unknown, message?: string): QueueFatalError {
 }
 
 /**
+ * Narrow an unknown thrown value to a `QueueKitError` without an `instanceof`
+ * check. Returns the error itself when it is already a `QueueKitError`
+ * subclass (including the `retryable()` / `fatal()` wrappers), or `undefined`
+ * when the input is not a Queue Kit error.
+ *
+ * Useful at handler boundaries where you want to log or react to Queue
+ * Kit-specific errors (with their `code`, `provider`, and preserved `cause`)
+ * while letting everything else propagate as-is:
+ *
+ * ```ts
+ * try {
+ *   await handler(payload);
+ * } catch (err) {
+ *   const qk = tryQueueKitError(err);
+ *   if (qk) log.error({ code: qk.code, provider: qk.provider }, qk.message);
+ *   throw err;
+ * }
+ * ```
+ */
+export function tryQueueKitError(error: unknown): QueueKitError | undefined {
+  if (error instanceof QueueKitError) return error;
+  return undefined;
+}
+
+/**
  * Fatal errors (and non-retryable Queue Kit errors) must skip retry.
  * Recognises Queue Kit errors, and duck-types a `retryable: false` property
  * so plain application errors can opt out of retries without wrapping.

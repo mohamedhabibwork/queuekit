@@ -6,6 +6,7 @@ import {
   isFatalError,
   QueueConfigurationError,
   retryable,
+  tryQueueKitError,
   UnsupportedCapabilityError,
   QueueKitError,
   QueueSendError,
@@ -100,6 +101,27 @@ describe("errors", () => {
     expect(isFatalError(new QueueValidationError("bad"))).toBe(true);
     expect(isFatalError(new UnsupportedCapabilityError("fifo"))).toBe(true);
     expect(isFatalError(new Error("plain"))).toBe(false);
+    expect(isFatalError("string thrown")).toBe(false);
+  });
+
+  it("tryQueueKitError narrows Queue Kit errors and ignores the rest", () => {
+    const qk = new QueueSendError("send failed", { provider: "memory" });
+    const narrowed = tryQueueKitError(qk);
+    expect(narrowed).toBe(qk);
+    expect(narrowed?.code).toBe("QUEUE_SEND");
+    expect(narrowed?.provider).toBe("memory");
+
+    // retryable()/fatal() wrappers are QueueKitError subclasses.
+    expect(tryQueueKitError(retryable(new Error("x")))).toBeInstanceOf(QueueKitError);
+    expect(tryQueueKitError(fatal(new Error("x")))).toBeInstanceOf(QueueKitError);
+
+    // Non-Queue Kit errors -> undefined.
+    expect(tryQueueKitError(new Error("plain"))).toBeUndefined();
+    expect(tryQueueKitError(new TypeError("nope"))).toBeUndefined();
+    expect(tryQueueKitError("string thrown")).toBeUndefined();
+    expect(tryQueueKitError(null)).toBeUndefined();
+    expect(tryQueueKitError(undefined)).toBeUndefined();
+    expect(tryQueueKitError({ code: "NOT_OURS" })).toBeUndefined();
   });
 
   it("wrapping helpers keep the original error", () => {
