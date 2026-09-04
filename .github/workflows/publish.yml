@@ -7,14 +7,18 @@ name: publish
 # e.g. `@queue-kit/core-v0.2.0`, `@queue-kit/memory-v0.1.1`.
 #
 # Flow:
-#   1. detect-package       — parse the tag into {package-name, dir, version}
-#   2. quality              — pnpm install + lint + typecheck + tests + build
-#                             (whole workspace, so peer-deps are sound)
-#   3. check-version        — tag matches the package's package.json version
-#   4. publish              — pnpm publish ONLY the matching package, with
-#                             provenance
-#   5. github-release       — idempotent guard against release-please having
-#                             already created the release
+#   1. parse-tag          — parse the tag into {package-name, dir, version}
+#                          and echo them on $GITHUB_STEP_SUMMARY + verify the
+#                          package directory exists. (Self-contained — does
+#                          NOT depend on outputs from a separate job, which
+#                          had cross-job propagation issues on tag pushes.)
+#   2. quality            — pnpm install + lint + typecheck + tests + build
+#                          (whole workspace, so peer-deps are sound)
+#   3. check-version      — tag matches the package's package.json version
+#   4. publish            — pnpm publish ONLY the matching package, with
+#                          provenance
+#   5. github-release     — idempotent guard against release-please having
+#                          already created the release
 #
 # Required secrets:
 #   - NPM_TOKEN  — granular token with publish rights on @queue-kit
@@ -40,22 +44,18 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  detect-package:
-    name: Detect package from tag
+  parse-tag:
+    name: Parse tag and validate workspace
     runs-on: ubuntu-latest
-    outputs:
-      package-name: ${{ steps.parse.outputs.package-name }}
-      package-dir: ${{ steps.parse.outputs.package-dir }}
-      version: ${{ steps.parse.outputs.version }}
     steps:
-      # Checkout is REQUIRED here so the DIR existence check below sees
-      # packages/<scope>/ on disk. Without it the job runs in an empty
-      # workspace and always errors with "Resolved package directory
-      # does not exist".
+      # Checkout is REQUIRED so the DIR existence check below sees
+      # packages/<scope>/ on disk. We use the helper to set env vars
+      # for downstream jobs (more robust than step.outputs across jobs).
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - id: parse
+      - name: Resolve package from tag
+        id: resolve
         env:
           REF_NAME: ${{ github.ref_name }}
           INPUT_PACKAGE: ${{ inputs.package }}
@@ -82,17 +82,31 @@ jobs:
             exit 1
           fi
 
-          echo "package-name=$PKG"  >> "$GITHUB_OUTPUT"
-          echo "package-dir=$DIR"   >> "$GITHUB_OUTPUT"
-          echo "version=$VER"       >> "$GITHUB_OUTPUT"
+          {
+            echo "package-name=$PKG"
+            echo "package-dir=$DIR"
+            echo "version=$VER"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Publish target"
+            echo ""
+            echo "- **Package:** \`$PKG\`"
+            echo "- **Directory:** \`$DIR/\`"
+            echo "- **Version:** \`$VER\`"
+            echo "- **Trigger:** \`${REF_NAME}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
           echo "Resolved: $PKG @ $DIR v$VER"
 
   quality:
     name: Quality gate
-    needs: detect-package
+    needs: parse-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
 
@@ -117,19 +131,21 @@ jobs:
 
       - name: Package checks (publint)
         env:
-          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
+          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
         run: pnpm dlx publint "$PKG_DIR" --strict
 
   check-version:
     name: Verify tag == package.json version
-    needs: detect-package
+    needs: parse-tag
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Compare tag vs package.json
         env:
-          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
-          VERSION: ${{ needs.detect-package.outputs.version }}
+          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
+          VERSION: ${{ needs.parse-tag.outputs.version }}
         run: |
           set -euo pipefail
           PKG_VERSION="$(node -p "require('./${PKG_DIR}/package.json').version")"
@@ -140,7 +156,7 @@ jobs:
           echo "OK: ${PKG_DIR} @ $PKG_VERSION matches tag v$VERSION"
 
   publish:
-    name: Publish ${{ needs.detect-package.outputs.package-name }}@${{ needs.detect-package.outputs.version }}
+    name: Publish ${{ needs.parse-tag.outputs.package-name }}@${{ needs.parse-tag.outputs.version }}
     needs: [quality, check-version]
     if: >-
       ${{
@@ -154,6 +170,8 @@ jobs:
       id-token: write   # npm provenance
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
 
@@ -165,21 +183,22 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Build package (and any workspace deps)
+      - name: Build matching package
         env:
-          PKG_NAME: ${{ needs.detect-package.outputs.package-name }}
+          PKG_NAME: ${{ needs.parse-tag.outputs.package-name }}
         run: pnpm --filter "$PKG_NAME..." build
 
       - name: Publish to npm
         env:
-          PKG_DIR: ${{ needs.detect-package.outputs.package-dir }}
+          PKG_DIR: ${{ needs.parse-tag.outputs.package-dir }}
+          PKG_NAME: ${{ needs.parse-tag.outputs.package-name }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        working-directory: ${{ needs.detect-package.outputs.package-dir }}
+        working-directory: ${{ needs.parse-tag.outputs.package-dir }}
         run: |
           set -euo pipefail
           # --no-git-checks avoids pnpm's "Git not clean" failure when the
-          # tag was just pushed by release-please and the local checkout
-          # has no matching commit yet.
+          # tag was just pushed and the local checkout has no matching
+          # commit yet.
           pnpm publish --access=public --provenance --no-git-checks
 
   github-release:
@@ -195,6 +214,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Ensure GitHub release exists
         env:
           GH_TOKEN: ${{ github.token }}
