@@ -1,0 +1,47 @@
+{
+  "name": "@queue-kit/core",
+  "version": "0.1.0",
+  "description": "Unified TypeScript queue primitives across providers, with typed native escape hatches and capability discovery. Zero runtime dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "queue",
+    "typescript",
+    "jobs",
+    "worker",
+    "message-queue",
+    "background-jobs",
+    "task-queue",
+    "bullmq",
+    "sqs",
+    "rabbitmq"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.0"
+  }
+}
