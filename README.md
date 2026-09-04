@@ -1,12 +1,12 @@
 # Queue Kit
 
-[![@queue-kit/core version](https://img.shields.io/npm/v/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
-[![@queue-kit/memory version](https://img.shields.io/npm/v/@queue-kit/memory)](https://www.npmjs.com/package/@queue-kit/memory)
-[![@queue-kit/core downloads](https://img.shields.io/npm/dm/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
+[![@mohamedhabibwork/core version](https://img.shields.io/npm/v/@mohamedhabibwork/core)](https://www.npmjs.com/package/@mohamedhabibwork/core)
+[![@mohamedhabibwork/memory version](https://img.shields.io/npm/v/@mohamedhabibwork/memory)](https://www.npmjs.com/package/@mohamedhabibwork/memory)
+[![@mohamedhabibwork/core downloads](https://img.shields.io/npm/dm/@mohamedhabibwork/core)](https://www.npmjs.com/package/@mohamedhabibwork/core)
 [![Latest Release (monorepo)](https://img.shields.io/github/v/release/mohamedhabibwork/queuekit)](https://github.com/mohamedhabibwork/queuekit/releases/latest)
-[![License: MIT](https://img.shields.io/npm/l/@queue-kit/core)](./LICENSE)
+[![License: MIT](https://img.shields.io/npm/l/@mohamedhabibwork/core)](./LICENSE)
 [![GitHub: @mohamedhabibwork](https://img.shields.io/badge/GitHub-@mohamedhabibwork-181717?logo=github&logoColor=white)](https://github.com/mohamedhabibwork)
-[![Node.js ≥ 20](https://img.shields.io/node/v/@queue-kit/core)](https://nodejs.org)
+[![Node.js ≥ 20](https://img.shields.io/node/v/@mohamedhabibwork/core)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![CI](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml)
 [![release-please](https://github.com/mohamedhabibwork/queuekit/actions/workflows/release-please.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/release-please.yml)
@@ -49,8 +49,8 @@ await queue.send("order.created", payload, {
 
 | Package | Purpose |
 |---|---|
-| [`@queue-kit/core`](packages/core) | Queue primitives, provider contract, worker engine, typed native escape hatches. Zero runtime dependencies. |
-| [`@queue-kit/memory`](packages/memory) | In-memory provider for tests, examples and local development. Deterministic with `FakeClock`. |
+| [`@mohamedhabibwork/core`](packages/core) | Queue primitives, provider contract, worker engine, typed native escape hatches. Zero runtime dependencies. |
+| [`@mohamedhabibwork/memory`](packages/memory) | In-memory provider for tests, examples and local development. Deterministic with `FakeClock`. |
 
 Planned adapters (same contract, same native-typing rules): BullMQ, AWS SQS, RabbitMQ, Azure Queue
 Storage, Google Cloud Tasks — plus community adapters via `defineQueueProvider`.
@@ -71,12 +71,12 @@ Storage, Google Cloud Tasks — plus community adapters via `defineQueueProvider
 ## Quick start
 
 ```bash
-pnpm add @queue-kit/core @queue-kit/memory
+pnpm add @mohamedhabibwork/core @mohamedhabibwork/memory
 ```
 
 ```ts
-import { createQueue, defineJob } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory";
+import { createQueue, defineJob } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory";
 
 const sendEmail = defineJob<{ to: string; subject: string }, { messageId: string }>("email.send");
 
@@ -102,8 +102,8 @@ await queue.close();
 ### Deterministic tests
 
 ```ts
-import { FakeClock } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory";
+import { FakeClock } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory";
 
 const clock = new FakeClock();
 const queue = createQueue({ name: "emails", provider: memory({ clock }) });
@@ -115,7 +115,7 @@ clock.advance("5m"); // the delayed message becomes visible — no real sleeping
 ### Typed job definitions + validation
 
 ```ts
-import { defineJob } from "@queue-kit/core";
+import { defineJob } from "@mohamedhabibwork/core";
 import { z } from "zod"; // any Standard Schema library works
 
 const chargeCard = defineJob({
@@ -149,7 +149,7 @@ Queue Kit separates application retry (above), provider retry (native options) a
 |---|---|
 | Node.js ≥ 20 | ✅ primary target (CI matrix) |
 | Bun | ✅ smoke-tested (`bun run bun:smoke`) |
-| Deno 2 | ✅ via `npm:@queue-kit/*` specifiers (ESM + standard APIs) |
+| Deno 2 | ✅ via `npm:@mohamedhabibwork/*` specifiers (ESM + standard APIs) |
 | Browsers | Core types/serialization only; providers and workers are server-side |
 
 ## Development

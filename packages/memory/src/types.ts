@@ -1,5 +1,5 @@
-import type { ProviderTypes } from "@queue-kit/core";
-import type { Clock, DurationInput, QueueSize } from "@queue-kit/core";
+import type { ProviderTypes } from "@mohamedhabibwork/core";
+import type { Clock, DurationInput, QueueSize } from "@mohamedhabibwork/core";
 
 /** Options accepted by the in-memory provider factory. */
 export interface MemoryProviderOptions {

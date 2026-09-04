@@ -1,7 +1,7 @@
 # Release process
 
 This document describes the end-to-end release process for the
-`@queue-kit/*` monorepo. Internal-facing — for the contributor overview,
+`@mohamedhabibwork/*` monorepo. Internal-facing — for the contributor overview,
 see [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 
 ## TL;DR
@@ -18,7 +18,7 @@ release-please.yml
         │
         │  squash-merge
         ▼
-release-please pushes @queue-kit/<scope>-v<X.Y.Z> tag + creates GH release
+release-please pushes @mohamedhabibwork/<scope>-v<X.Y.Z> tag + creates GH release
         │
         ▼
 publish.yml  →  quality gate  →  tag-vs-version  →  pnpm publish <pkg>
@@ -54,8 +54,8 @@ and is what release-please reads to determine the next version bump.
 - `docs:` / `test:` / `build:` / `ci:` / `chore:` → no release
 
 The `node-workspace` plugin with `update-peer-dependencies: true`
-ensures that when `@queue-kit/core` ships a new version, the next
-`memory` release bumps its `peerDependencies."@queue-kit/core": "^..."`
+ensures that when `@mohamedhabibwork/core` ships a new version, the next
+`memory` release bumps its `peerDependencies."@mohamedhabibwork/core": "^..."`
 reference accordingly.
 
 ### 2. release-please opens one Release PR per package
@@ -80,7 +80,7 @@ You can override a specific package's next version by editing
 Squash-merge each Release PR once everything looks right. release-please
 detects the merge and:
 
-- Pushes the `@queue-kit/<scope>-v<X.Y.Z>` tag.
+- Pushes the `@mohamedhabibwork/<scope>-v<X.Y.Z>` tag.
 - Creates a GitHub Release with auto-generated notes.
 
 ### 4. publish.yml runs (per tag)
@@ -89,7 +89,7 @@ The tag push fires `.github/workflows/publish.yml`. The `detect-package`
 job parses the tag and exports three outputs:
 
 ```
-package-name = "@queue-kit/core"     # or "memory"
+package-name = "@mohamedhabibwork/core"     # or "memory"
 package-dir   = "packages/core"      # or "packages/memory"
 version       = "0.2.0"
 ```
@@ -117,10 +117,10 @@ The pipeline then:
 
 | Package           | Tag pattern                              | Example                          |
 | ----------------- | ---------------------------------------- | -------------------------------- |
-| `@queue-kit/core`   | `@queue-kit/core-v<X.Y.Z>`               | `@queue-kit/core-v0.2.0`         |
-| `@queue-kit/memory` | `@queue-kit/memory-v<X.Y.Z>`             | `@queue-kit/memory-v0.1.1`       |
+| `@mohamedhabibwork/core`   | `@mohamedhabibwork/core-v<X.Y.Z>`               | `@mohamedhabibwork/core-v0.2.0`         |
+| `@mohamedhabibwork/memory` | `@mohamedhabibwork/memory-v<X.Y.Z>`             | `@mohamedhabibwork/memory-v0.1.1`       |
 
-`publish.yml`'s trigger is `tags: ['@queue-kit/*-v*']` (a single pattern
+`publish.yml`'s trigger is `tags: ['@mohamedhabibwork/*-v*']` (a single pattern
 covering all current and future packages).
 
 ## Manual escape hatch
@@ -131,15 +131,15 @@ branch, force-push situation, or release-please runner outage. The
 package:
 
 ```bash
-./scripts/release.sh core patch        # @queue-kit/core: 0.1.0 -> 0.1.1
-./scripts/release.sh memory minor      # @queue-kit/memory: 0.1.0 -> 0.2.0
+./scripts/release.sh core patch        # @mohamedhabibwork/core: 0.1.0 -> 0.1.1
+./scripts/release.sh memory minor      # @mohamedhabibwork/memory: 0.1.0 -> 0.2.0
 ./scripts/release.sh core 1.4.2        # explicit version
 ```
 
 Under the hood:
 
 1. Verifies the working tree is clean and on `main`.
-2. Calls `pnpm --filter @queue-kit/<pkg> version <bump>` (which updates
+2. Calls `pnpm --filter @mohamedhabibwork/<pkg> version <bump>` (which updates
    that package's `package.json`, creates a commit, and tags it).
 3. Pushes the commit + tag with `--follow-tags`.
 4. publish.yml takes over and runs `pnpm publish` for that single
@@ -156,7 +156,7 @@ node -e "
   fs.writeFileSync('.release-please-manifest.json', JSON.stringify(m, null, 2) + '\n');
 "
 git add .release-please-manifest.json
-git commit -m "chore(release): sync manifest after manual release of @queue-kit/<pkg>"
+git commit -m "chore(release): sync manifest after manual release of @mohamedhabibwork/<pkg>"
 ```
 
 ## Required secrets
@@ -181,7 +181,7 @@ Release creation, PR / issue writes).
 Fix: align `packages/<pkg>/package.json`'s `version` with the tag, or
 force-push a corrected tag.
 
-### "Release @queue-kit/<scope>-vX.Y.Z already exists"
+### "Release @mohamedhabibwork/<scope>-vX.Y.Z already exists"
 
 That's the idempotent guard. `publish.yml`'s `github-release` step
 checks for an existing release and skips creation. Safe to ignore.
@@ -200,9 +200,40 @@ package and commit with `chore(release): force <version> for <pkg>`.
 ### npm publish 403 / 401
 
 - 401: `secrets.NPM_TOKEN` is missing or expired.
-- 403: token lacks publish rights on the `@queue-kit` scope. Use a
-  granular access token with `Read and write` for the `@queue-kit`
+- 403: token lacks publish rights on the `@mohamedhabibwork` scope. Use a
+  granular access token with `Read and write` for the `@mohamedhabibwork`
   scope at <https://www.npmjs.com/settings/~/tokens>.
+
+### npm publish 404 "Scope not found"
+
+The scope `@mohamedhabibwork` doesn't exist on registry.npmjs.org yet. npm
+returns a generic 404 with body `Scope not found`, which doesn't
+say "create the org first". `publish.yml` has a pre-flight step
+that probes `https://registry.npmjs.org/@mohamedhabibwork` and fails fast
+with an actionable error before calling `pnpm publish`.
+
+Fix — create the org (one-time, free for public packages):
+
+1. Visit <https://www.npmjs.com/org/create>
+2. Name: `queue-kit` (npm scopes are namespace-only, so the
+   `@mohamedhabibwork` scope comes from this org name).
+3. Choose the **Free** tier (sufficient for unlimited public packages).
+4. Finish. The org exists immediately.
+
+Then the publish run will succeed:
+
+```
+✅ scope @mohamedhabibwork exists on registry.npmjs.org
+📦 @mohamedhabibwork/core@0.2.0 → https://registry.npmjs.org/
++ @mohamedhabibwork/core@0.2.0
+```
+
+If you want **provenance** (npm attestation that the package was
+built from this repo), also configure OIDC trusted publishing in
+the org settings at <https://www.npmjs.com/settings/queue-kit/profile>
+→ "Trusted Publisher" — point it at this GitHub repo and workflow.
+Once configured, `pnpm publish --provenance` will succeed without
+the `Skipped OIDC` warning.
 
 ### release-please failed: "GitHub Actions is not permitted to create or approve pull requests"
 
@@ -233,10 +264,10 @@ repo setting is fine for solo repos.
 ### Wrong package detected
 
 `publish.yml` `detect-package` derives the package from the tag name.
-If you accidentally push a tag like `@queue-kit/core-v0.2.0` for an
+If you accidentally push a tag like `@mohamedhabibwork/core-v0.2.0` for an
 unreleased package, delete it locally AND remotely:
 
 ```bash
-git tag -d @queue-kit/core-v0.2.0
-git push origin :refs/tags/@queue-kit/core-v0.2.0
+git tag -d @mohamedhabibwork/core-v0.2.0
+git push origin :refs/tags/@mohamedhabibwork/core-v0.2.0
 ```

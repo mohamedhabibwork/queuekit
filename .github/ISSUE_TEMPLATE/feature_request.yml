@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a feature for @queue-kit/core, a provider, or the monorepo.
+description: Suggest a feature for @mohamedhabibwork/core, a provider, or the monorepo.
 title: "[feat]: "
 labels: ["enhancement", "needs-triage"]
 assignees: []
@@ -16,8 +16,8 @@ body:
     attributes:
       label: Which package?
       options:
-        - "@queue-kit/core"
-        - "@queue-kit/memory"
+        - "@mohamedhabibwork/core"
+        - "@mohamedhabibwork/memory"
         - "New provider"
         - "Monorepo / tooling"
     validations:

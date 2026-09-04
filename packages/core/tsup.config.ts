@@ -11,7 +11,7 @@ const shared = {
   target: "es2022",
   splitting: true,
   treeshake: true,
-  external: ["@queue-kit/core"],
+  external: ["@mohamedhabibwork/core"],
 };
 
 export default defineConfig([

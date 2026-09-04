@@ -1,26 +1,26 @@
-# @queue-kit/core
+# @mohamedhabibwork/core
 
-[![npm version](https://img.shields.io/npm/v/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
-[![npm downloads](https://img.shields.io/npm/dm/@queue-kit/core)](https://www.npmjs.com/package/@queue-kit/core)
-[![License: MIT](https://img.shields.io/npm/l/@queue-kit/core)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/@mohamedhabibwork/core)](https://www.npmjs.com/package/@mohamedhabibwork/core)
+[![npm downloads](https://img.shields.io/npm/dm/@mohamedhabibwork/core)](https://www.npmjs.com/package/@mohamedhabibwork/core)
+[![License: MIT](https://img.shields.io/npm/l/@mohamedhabibwork/core)](./LICENSE)
 [![GitHub: @mohamedhabibwork](https://img.shields.io/badge/GitHub-@mohamedhabibwork-181717?logo=github&logoColor=white)](https://github.com/mohamedhabibwork)
-[![Node.js ≥ 20](https://img.shields.io/node/v/@queue-kit/core)](https://nodejs.org)
+[![Node.js ≥ 20](https://img.shields.io/node/v/@mohamedhabibwork/core)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![CI](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml)
-[![Socket](https://badge.socket.dev/npm/package/@queue-kit/core)](https://socket.dev/npm/package/@queue-kit/core)
+[![Socket](https://badge.socket.dev/npm/package/@mohamedhabibwork/core)](https://socket.dev/npm/package/@mohamedhabibwork/core)
 
 Portable queue primitives for TypeScript with **typed native escape hatches** and **capability
 discovery**. Zero runtime dependencies, ESM-only, runs on Node, Bun and Deno.
 
 ```bash
-pnpm add @queue-kit/core
+pnpm add @mohamedhabibwork/core
 ```
 
 ## The four usage levels
 
 ```ts
-import { createQueue, defineJob } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory"; // any @queue-kit/* provider
+import { createQueue, defineJob } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory"; // any @mohamedhabibwork/* provider
 
 const queue = createQueue({ name: "emails", provider: memory() });
 const sendEmail = defineJob<{ to: string }, { id: string }>("email.send");
@@ -46,7 +46,7 @@ queue.assertCapability("fifo");    // throws UnsupportedCapabilityError
 `queue.describe/health/size/purge`, `queue.use/on`, `queue.connect/close`,
 `createQueueRegistry`, `installGracefulShutdown`, the full error taxonomy
 (`QueueKitError` + 14 subclasses, `retryable()`/`fatal()` helpers), `FakeClock`,
-`JsonSerializer`, and testing utilities under `@queue-kit/core/testing`
+`JsonSerializer`, and testing utilities under `@mohamedhabibwork/core/testing`
 (`captureJobs`, `waitForQueueEvent`, `waitForWorkerEvent`).
 
 ## Writing a provider adapter
@@ -55,7 +55,7 @@ Adapters implement `QueueAdapter<TTypes>` where `TTypes extends ProviderTypes` c
 native surface:
 
 ```ts
-import { defineQueueProvider, type ProviderTypes } from "@queue-kit/core";
+import { defineQueueProvider, type ProviderTypes } from "@mohamedhabibwork/core";
 
 interface MyTypes extends ProviderTypes {
   connection: MyConnectionOptions;

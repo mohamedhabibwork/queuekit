@@ -6,9 +6,9 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      "@queue-kit/core/testing": `${root}packages/core/src/testing.ts`,
-      "@queue-kit/core": `${root}packages/core/src/index.ts`,
-      "@queue-kit/memory": `${root}packages/memory/src/index.ts`,
+      "@mohamedhabibwork/core/testing": `${root}packages/core/src/testing.ts`,
+      "@mohamedhabibwork/core": `${root}packages/core/src/index.ts`,
+      "@mohamedhabibwork/memory": `${root}packages/memory/src/index.ts`,
     },
   },
   test: {

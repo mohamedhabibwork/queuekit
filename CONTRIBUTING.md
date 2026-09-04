@@ -1,6 +1,6 @@
 # Contributing to Queue Kit
 
-Thanks for your interest in `@queue-kit/*`! This guide covers how to set up
+Thanks for your interest in `@mohamedhabibwork/*`! This guide covers how to set up
 the project locally, the commit / PR conventions, and how releases are
 produced across the monorepo.
 
@@ -9,9 +9,9 @@ produced across the monorepo.
 ```
 queuekit/                       # this monorepo
 ├── packages/
-│   ├── core/                   # @queue-kit/core    (publishable, queue primitives + worker engine)
-│   └── memory/                 # @queue-kit/memory  (publishable, in-memory provider)
-├── examples/                   # @queue-kit/examples (private, runnable demos)
+│   ├── core/                   # @mohamedhabibwork/core    (publishable, queue primitives + worker engine)
+│   └── memory/                 # @mohamedhabibwork/memory  (publishable, in-memory provider)
+├── examples/                   # @mohamedhabibwork/examples (private, runnable demos)
 ├── .github/
 │   ├── workflows/              # ci.yml, release-please.yml, publish.yml, ...
 │   ├── RELEASE.md              # internal release-process doc
@@ -28,12 +28,12 @@ queuekit/                       # this monorepo
 
 | Package | Published? | Versioned by | Tag format |
 | --- | --- | --- | --- |
-| `@queue-kit/core`   | yes | release-please | `@queue-kit/core-v<X.Y.Z>` |
-| `@queue-kit/memory` | yes | release-please | `@queue-kit/memory-v<X.Y.Z>` |
-| `@queue-kit/examples` | no (private) | manual | n/a |
+| `@mohamedhabibwork/core`   | yes | release-please | `@mohamedhabibwork/core-v<X.Y.Z>` |
+| `@mohamedhabibwork/memory` | yes | release-please | `@mohamedhabibwork/memory-v<X.Y.Z>` |
+| `@mohamedhabibwork/examples` | no (private) | manual | n/a |
 | `queue-kit-monorepo` (root) | no (private) | manual | n/a |
 
-Memory declares `@queue-kit/core` as a **peer-dependency** (`workspace:^`).
+Memory declares `@mohamedhabibwork/core` as a **peer-dependency** (`workspace:^`).
 The `node-workspace` plugin in `release-please-config.json` (with
 `update-peer-dependencies: true`) automatically bumps that peer-dep every
 time a new `core` release is cut. Because the two packages are versioned
@@ -63,8 +63,8 @@ pnpm lint           # eslint packages examples
 For one package:
 
 ```bash
-pnpm --filter @queue-kit/core build
-pnpm --filter @queue-kit/core test:types
+pnpm --filter @mohamedhabibwork/core build
+pnpm --filter @mohamedhabibwork/core test:types
 ```
 
 ## Commit message convention — Conventional Commits 1.0
@@ -88,8 +88,8 @@ package) is derived automatically from the merged PR titles on `main`.
 
 | Scope          | Targets package        | Bumps release-please track    |
 | -------------- | ---------------------- | ----------------------------- |
-| `core`         | `packages/core/**`     | `@queue-kit/core`             |
-| `memory`       | `packages/memory/**`   | `@queue-kit/memory`           |
+| `core`         | `packages/core/**`     | `@mohamedhabibwork/core`             |
+| `memory`       | `packages/memory/**`   | `@mohamedhabibwork/memory`           |
 | `workspace`    | cross-cutting commits  | the touched packages         |
 | (omitted)      | root, examples, docs   | none                          |
 
@@ -179,15 +179,15 @@ title for changelog generation.
 ## Adding a new provider
 
 The monorepo is designed for community adapters via
-`defineQueueProvider` in `@queue-kit/core`.
+`defineQueueProvider` in `@mohamedhabibwork/core`.
 
-To add an in-repo provider package (`@queue-kit/<name>`):
+To add an in-repo provider package (`@mohamedhabibwork/<name>`):
 
 1. Create `packages/<name>/` with the standard layout (src/, package.json,
    tsup config, README).
 2. In `packages/<name>/package.json`, declare peer-deps:
    ```json
-   "peerDependencies": { "@queue-kit/core": "workspace:^" }
+   "peerDependencies": { "@mohamedhabibwork/core": "workspace:^" }
    ```
 3. Add an entry to `release-please-config.json` under `packages.<name>`
    (copy the `core` or `memory` block, change component / package-name).
@@ -220,7 +220,7 @@ The short version:
 2. `release-please` opens/updates one Release PR **per package** that
    has changes since the last release.
 3. Review the Release PRs — squash-merge when ready.
-4. `release-please` pushes the tag (`@queue-kit/<scope>-v<X.Y.Z>`) and
+4. `release-please` pushes the tag (`@mohamedhabibwork/<scope>-v<X.Y.Z>`) and
    creates the GitHub release.
 5. `.github/workflows/publish.yml` picks up the tag → quality gate →
    publishes that single package to npm.

@@ -32,10 +32,10 @@ importers:
 
   examples:
     dependencies:
-      '@queue-kit/core':
+      '@mohamedhabibwork/core':
         specifier: workspace:^
         version: link:../packages/core
-      '@queue-kit/memory':
+      '@mohamedhabibwork/memory':
         specifier: workspace:^
         version: link:../packages/memory
 
@@ -53,7 +53,7 @@ importers:
 
   packages/memory:
     devDependencies:
-      '@queue-kit/core':
+      '@mohamedhabibwork/core':
         specifier: workspace:^
         version: link:../core
       tsup:

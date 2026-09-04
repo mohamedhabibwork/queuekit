@@ -1,10 +1,10 @@
 {
-  "name": "@queue-kit/examples",
+  "name": "@mohamedhabibwork/examples",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@queue-kit/core": "workspace:^",
-    "@queue-kit/memory": "workspace:^"
+    "@mohamedhabibwork/core": "workspace:^",
+    "@mohamedhabibwork/memory": "workspace:^"
   }
 }

@@ -21,8 +21,8 @@
   "packages": {
     "packages/core": {
       "release-type": "node",
-      "component": "@queue-kit/core",
-      "package-name": "@queue-kit/core",
+      "component": "@mohamedhabibwork/core",
+      "package-name": "@mohamedhabibwork/core",
       "changelog-path": "CHANGELOG.md",
       "changelog-host": "https://github.com/mohamedhabibwork/queuekit",
       "changelog-sections": [
@@ -42,8 +42,8 @@
     },
     "packages/memory": {
       "release-type": "node",
-      "component": "@queue-kit/memory",
-      "package-name": "@queue-kit/memory",
+      "component": "@mohamedhabibwork/memory",
+      "package-name": "@mohamedhabibwork/memory",
       "changelog-path": "CHANGELOG.md",
       "changelog-host": "https://github.com/mohamedhabibwork/queuekit",
       "changelog-sections": [

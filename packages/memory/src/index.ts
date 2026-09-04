@@ -1,4 +1,4 @@
-import { parseDuration, systemClock, type Clock, type QueueProvider } from "@queue-kit/core";
+import { parseDuration, systemClock, type Clock, type QueueProvider } from "@mohamedhabibwork/core";
 import { MemoryBroker } from "./broker";
 import { MemoryQueueAdapter } from "./adapter";
 import type { MemoryProviderOptions, MemoryTypes } from "./types";
@@ -15,8 +15,8 @@ export { MemoryQueueAdapter } from "./adapter";
  * production.
  *
  * ```ts
- * import { createQueue } from "@queue-kit/core";
- * import { memory } from "@queue-kit/memory";
+ * import { createQueue } from "@mohamedhabibwork/core";
+ * import { memory } from "@mohamedhabibwork/memory";
  *
  * const queue = createQueue({ name: "emails", provider: memory() });
  * ```

@@ -4,8 +4,8 @@
  *
  * Run with: bun examples/capabilities.ts
  */
-import { createQueue, UnsupportedCapabilityError } from "@queue-kit/core";
-import { memory } from "@queue-kit/memory";
+import { createQueue, UnsupportedCapabilityError } from "@mohamedhabibwork/core";
+import { memory } from "@mohamedhabibwork/memory";
 
 const queue = createQueue({ name: "reports", provider: memory() });
 

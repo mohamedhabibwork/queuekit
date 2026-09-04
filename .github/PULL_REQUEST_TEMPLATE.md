@@ -1,5 +1,5 @@
 name: Pull request
-description: Open a PR for the @queue-kit/* monorepo.
+description: Open a PR for the @mohamedhabibwork/* monorepo.
 body:
   - type: markdown
     attributes:
@@ -25,8 +25,8 @@ body:
       description: Tick all that apply.
       multiple: true
       options:
-        - "@queue-kit/core"
-        - "@queue-kit/memory"
+        - "@mohamedhabibwork/core"
+        - "@mohamedhabibwork/memory"
         - "examples"
         - "monorepo / tooling"
 
