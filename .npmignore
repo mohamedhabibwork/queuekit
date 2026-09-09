@@ -1,0 +1,8 @@
+src/
+tests/
+docs/
+.github/
+queuekit-plan.md
+tsconfig*.json
+tsup.config.ts
+vitest.config.ts
