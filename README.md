@@ -1,5 +1,17 @@
 # QueueKit
 
+[![npm version](https://img.shields.io/npm/v/@mohamedhabibwork/queuekit)](https://www.npmjs.com/package/@mohamedhabibwork/queuekit)
+[![npm downloads](https://img.shields.io/npm/dm/@mohamedhabibwork/queuekit)](https://www.npmjs.com/package/@mohamedhabibwork/queuekit)
+[![Latest Release](https://img.shields.io/github/v/release/mohamedhabibwork/queuekit)](https://github.com/mohamedhabibwork/queuekit/releases/latest)
+[![License: MIT](https://img.shields.io/npm/l/@mohamedhabibwork/queuekit)](./LICENSE)
+[![GitHub: @mohamedhabibwork](https://img.shields.io/badge/GitHub-@mohamedhabibwork-181717?logo=github&logoColor=white)](https://github.com/mohamedhabibwork)
+[![Node.js >= 20](https://img.shields.io/node/v/@mohamedhabibwork/queuekit)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![CI](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/ci.yml)
+[![Docs](https://github.com/mohamedhabibwork/queuekit/actions/workflows/pages.yml/badge.svg)](https://mohamedhabibwork.github.io/queuekit/)
+[![TypeScript compatibility](https://github.com/mohamedhabibwork/queuekit/actions/workflows/typescript.yml/badge.svg)](https://github.com/mohamedhabibwork/queuekit/actions/workflows/typescript.yml)
+[![Socket](https://badge.socket.dev/npm/package/@mohamedhabibwork/queuekit)](https://socket.dev/npm/package/@mohamedhabibwork/queuekit)
+
 Runtime-neutral TypeScript infrastructure for job queues, message queues, pub/sub, and streams—without erasing provider-native capabilities and types.
 
 QueueKit supports Node.js 20+, Bun, and Deno 2+ for its runtime-neutral core. Version `0.1` ships adapters for BullMQ, Kafka, RabbitMQ, Redis (Pub/Sub and Streams), NATS Core, and Amazon SQS. Each SDK is an optional peer dependency and loads only when that provider is created.
