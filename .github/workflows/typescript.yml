@@ -25,4 +25,3 @@ jobs:
       - run: npm ci --legacy-peer-deps
       - run: npm install --no-save --legacy-peer-deps typescript@${{ matrix.typescript }}
       - run: npm run test:types
-      - run: npm run build
