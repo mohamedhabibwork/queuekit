@@ -2,6 +2,8 @@ export { createQueue } from './factory.js';
 export type { QueueForConfig } from './factory.js';
 export { createQueueManager } from './manager.js';
 export { createTypedQueue } from './registry.js';
+export { createMemoryQueue, createFakeQueue, MemoryQueue } from './testing/memory-queue.js';
+export type { MemoryMessage, MemoryFailure } from './testing/memory-queue.js';
 export { bytesCodec, jsonCodec, textCodec } from './core/codec.js';
 export { QueueAuthenticationError, QueueAuthorizationError, QueueClosedError, QueueConfigError, QueueConnectionError, QueueConsumeError, QueueDeserializationError, QueueError, QueuePublishError, QueueRateLimitError, QueueSerializationError, QueueTimeoutError, QueueUnsupportedFeatureError, isRetryableQueueError } from './core/errors.js';
 export type * from './core/types.js';

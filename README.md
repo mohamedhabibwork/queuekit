@@ -85,6 +85,32 @@ See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for c
 
 ## Custom providers and tests
 
+Tests can use the built-in memory fake driver, which supports store-and-forward delivery, delays, retries, acknowledgements, and dead letters with deterministic controls:
+
+```ts
+import { createFakeQueue } from '@mohamedhabibwork/queuekit/testing';
+
+const testQueue = createFakeQueue();
+await testQueue.publish('emails', { type: 'welcome', payload: { email: 'person@example.com' } });
+
+await testQueue.waitUntilIdle();                    // await all in-flight handler work
+await testQueue.flush();                            // force delayed messages out immediately
+testQueue.pause(); testQueue.resume();              // hold and release delivery
+testQueue.pending('emails');                        // queued, unacknowledged messages
+testQueue.deadLetters('emails');                    // rejected / exhausted messages
+testQueue.failNext(new Error('broker down'));       // inject the next publish failure
+```
+
+The fake is also a first-class driver, so `createQueue` and `createQueueManager` can point at it with the same config shape used in production:
+
+```ts
+import { createQueueManager } from '@mohamedhabibwork/queuekit';
+
+const manager = createQueueManager({ providers: { jobs: { type: 'memory' } }, default: 'jobs' });
+```
+
+Custom providers are declared with `defineQueueProvider`:
+
 ```ts
 import { defineQueueProvider } from '@mohamedhabibwork/queuekit/custom';
 import { createMemoryQueue } from '@mohamedhabibwork/queuekit/testing';
