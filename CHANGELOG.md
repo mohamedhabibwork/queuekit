@@ -1,4 +1,13 @@
 # Changelog
+## changelog-smoke (2026-09-12)
+
+
+### Commits
+
+- 0683af4 ci: append release entries to CHANGELOG.md on every tag push
+
+**Full Changelog**: https://github.com/mohamedhabibwork/queuekit/compare/v0.2.0...changelog-smoke
+
 
 All notable releases, newest first. This file is updated automatically by the release workflow on every tag push; entries combine the generated GitHub release notes with the commits since the previous tag.
 
