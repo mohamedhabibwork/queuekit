@@ -36,6 +36,9 @@
   "bugs": { "url": "https://github.com/mohamedhabibwork/queuekit/issues" },
   "homepage": "https://mohamedhabibwork.github.io/queuekit/",
   "publishConfig": { "access": "public", "provenance": true },
+  "overrides": {
+    "esbuild": "^0.28.2"
+  },
   "peerDependencies": {
     "@aws-sdk/client-sqs": "^3.1128.0",
     "amqplib": "^0.10.9",
