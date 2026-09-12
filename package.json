@@ -1,24 +1,57 @@
 {
   "name": "@mohamedhabibwork/queuekit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Runtime-neutral TypeScript queues, messaging, pub/sub, and streams without losing provider-native types.",
   "type": "module",
   "sideEffects": false,
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./kafka": { "types": "./dist/kafka.d.ts", "import": "./dist/kafka.js" },
-    "./rabbitmq": { "types": "./dist/rabbitmq.d.ts", "import": "./dist/rabbitmq.js" },
-    "./bullmq": { "types": "./dist/bullmq.d.ts", "import": "./dist/bullmq.js" },
-    "./redis": { "types": "./dist/redis.d.ts", "import": "./dist/redis.js" },
-    "./nats": { "types": "./dist/nats.d.ts", "import": "./dist/nats.js" },
-    "./sqs": { "types": "./dist/sqs.d.ts", "import": "./dist/sqs.js" },
-    "./custom": { "types": "./dist/custom.d.ts", "import": "./dist/custom.js" },
-    "./testing": { "types": "./dist/testing.d.ts", "import": "./dist/testing.js" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./kafka": {
+      "types": "./dist/kafka.d.ts",
+      "import": "./dist/kafka.js"
+    },
+    "./rabbitmq": {
+      "types": "./dist/rabbitmq.d.ts",
+      "import": "./dist/rabbitmq.js"
+    },
+    "./bullmq": {
+      "types": "./dist/bullmq.d.ts",
+      "import": "./dist/bullmq.js"
+    },
+    "./redis": {
+      "types": "./dist/redis.d.ts",
+      "import": "./dist/redis.js"
+    },
+    "./nats": {
+      "types": "./dist/nats.d.ts",
+      "import": "./dist/nats.js"
+    },
+    "./sqs": {
+      "types": "./dist/sqs.d.ts",
+      "import": "./dist/sqs.js"
+    },
+    "./custom": {
+      "types": "./dist/custom.d.ts",
+      "import": "./dist/custom.js"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js"
+    }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsup",
     "clean": "rimraf dist coverage",
@@ -29,13 +62,33 @@
     "pack:check": "npm pack --dry-run",
     "prepublishOnly": "npm run clean && npm run check"
   },
-  "keywords": ["queue", "messaging", "kafka", "rabbitmq", "bullmq", "redis", "nats", "sqs", "typescript", "deno", "bun"],
+  "keywords": [
+    "queue",
+    "messaging",
+    "kafka",
+    "rabbitmq",
+    "bullmq",
+    "redis",
+    "nats",
+    "sqs",
+    "typescript",
+    "deno",
+    "bun"
+  ],
   "author": "Mohamed Habib",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/mohamedhabibwork/queuekit.git" },
-  "bugs": { "url": "https://github.com/mohamedhabibwork/queuekit/issues" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohamedhabibwork/queuekit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mohamedhabibwork/queuekit/issues"
+  },
   "homepage": "https://mohamedhabibwork.github.io/queuekit/",
-  "publishConfig": { "access": "public", "provenance": true },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "overrides": {
     "esbuild": "^0.28.2"
   },
@@ -48,12 +101,24 @@
     "redis": "^6.2.1"
   },
   "peerDependenciesMeta": {
-    "@aws-sdk/client-sqs": { "optional": true },
-    "amqplib": { "optional": true },
-    "bullmq": { "optional": true },
-    "kafkajs": { "optional": true },
-    "nats": { "optional": true },
-    "redis": { "optional": true }
+    "@aws-sdk/client-sqs": {
+      "optional": true
+    },
+    "amqplib": {
+      "optional": true
+    },
+    "bullmq": {
+      "optional": true
+    },
+    "kafkajs": {
+      "optional": true
+    },
+    "nats": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@aws-sdk/client-sqs": "^3.1128.0",
