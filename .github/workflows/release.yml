@@ -20,6 +20,7 @@ jobs:
       - name: Generate and publish changelog
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG_NAME: ${{ github.event.release.tag_name || github.ref_name }}
         run: |
           gh api \
