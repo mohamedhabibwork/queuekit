@@ -17,6 +17,10 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
       - name: Generate and publish changelog
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,6 +41,42 @@ jobs:
           else
             gh release create "$TAG_NAME" --title "$release_title" --notes-file RELEASE_NOTES.md
           fi
+
+      - name: Update CHANGELOG.md
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name || github.ref_name }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if grep -q "^## ${TAG_NAME} " CHANGELOG.md; then
+            echo "CHANGELOG.md already has a ${TAG_NAME} entry; skipping."
+            exit 0
+          fi
+
+          date="$(date +%F)"
+          previous="$(git describe --tags --abbrev=0 "${TAG_NAME}^" 2>/dev/null || true)"
+
+          {
+            printf '## %s (%s)\n\n' "${TAG_NAME}" "${date}"
+            # Drop the trailing "Full Changelog" compare link; it is regenerated below.
+            sed '/^\*\*Full Changelog\*\*/d' RELEASE_NOTES.md
+            if [ -n "${previous}" ]; then
+              printf '\n### Commits\n\n'
+              git log --format='- %h %s' "${previous}..${TAG_NAME}"
+              printf "\n**Full Changelog**: https://github.com/${GH_REPO}/compare/%s...%s\n" "${previous}" "${TAG_NAME}"
+            else
+              printf "\n**Full Changelog**: https://github.com/${GH_REPO}/commits/%s\n" "${TAG_NAME}"
+            fi
+            printf '\n'
+          } > changelog-entry.md
+
+          sed -i "/^# Changelog/r changelog-entry.md" CHANGELOG.md
+          rm changelog-entry.md
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --cached --quiet || git commit -m "docs(changelog): release ${TAG_NAME}"
+          git push origin main
 
   publish:
     needs: changelog
