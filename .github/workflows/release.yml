@@ -1,23 +1,55 @@
 name: Publish package
 
 on:
+  push:
+    tags: ['*']
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
+  changelog:
+    name: Generate release notes
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate and publish changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.event.release.tag_name || github.ref_name }}
+        run: |
+          gh api \
+            --method POST \
+            "repos/${GITHUB_REPOSITORY}/releases/generate-notes" \
+            -f "tag_name=${TAG_NAME}" \
+            > generated-release-notes.json
+
+          jq -r '.body' generated-release-notes.json > RELEASE_NOTES.md
+          release_title="$(jq -r '.name' generated-release-notes.json)"
+
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release edit "$TAG_NAME" --title "$release_title" --notes-file RELEASE_NOTES.md
+          else
+            gh release create "$TAG_NAME" --title "$release_title" --notes-file RELEASE_NOTES.md
+          fi
+
   publish:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    needs: changelog
+    if: >-
+      always() &&
+      (github.event_name == 'workflow_dispatch' ||
+      (needs.changelog.result == 'success' &&
+      startsWith(github.event.release.tag_name || github.ref_name, 'v')))
     runs-on: ubuntu-latest
     environment: npm
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.release.tag_name || github.sha }}
+          ref: ${{ github.event.release.tag_name || github.ref_name || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 24
