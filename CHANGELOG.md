@@ -1,4 +1,19 @@
 # Changelog
+## v0.3.0 (2026-09-21)
+
+
+### Commits
+
+- c1efea3 docs: add llms.txt for LLM-consumable site summary
+- 7046f6f feat(redis): streams dead-lettering + ioredis and valkey support
+- 0156b55 docs: redesign documentation site with per-provider examples
+- 8bfefbe test(e2e): end-to-end produce/consume suites for all providers
+- ffba87c chore: remove changelog smoke-test entry
+- 5bfcf05 docs(changelog): release changelog-smoke
+- 0683af4 ci: append release entries to CHANGELOG.md on every tag push
+
+**Full Changelog**: https://github.com/mohamedhabibwork/queuekit/compare/v0.2.0...v0.3.0
+
 
 All notable releases, newest first. This file is updated automatically by the release workflow on every tag push; entries combine the generated GitHub release notes with the commits since the previous tag.
 
