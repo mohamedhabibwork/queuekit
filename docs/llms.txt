@@ -1,0 +1,34 @@
+# QueueKit
+
+> Runtime-neutral TypeScript queues, messaging, pub/sub, and streams without losing provider-native types. One message model and lifecycle for BullMQ, Kafka, RabbitMQ, Redis (node-redis or ioredis, Redis or Valkey servers), NATS, and Amazon SQS — plus an in-memory fake driver for deterministic tests. Runs on Node 20+, Bun, and Deno 2+.
+
+Install the core and only the provider SDK you use: `npm install @mohamedhabibwork/queuekit kafkajs`. Every broker SDK is an optional peer dependency; a missing one throws a `QueueConfigError` with the exact install command.
+
+## Key facts
+
+- `createQueue(config)` returns a typed provider; provider-specific options always live under `native`, so BullMQ options can never leak into Kafka.
+- Providers advertise honest `capabilities` — QueueKit does not claim universal exactly-once delivery; make handlers idempotent.
+- Acknowledgements map to real broker operations: Kafka `ack.complete()` commits offsets, RabbitMQ maps to ack/nack/reject, Redis Streams `complete`/`retry`/`reject` map to XACK / XADD+XACK / dead-letter, SQS `complete` deletes the message.
+- Redis Streams consumers dead-letter rejected entries via `native.deadLetter` and start new groups at the stream's backlog (group id `0`).
+- The Redis provider accepts `client: 'redis'` (node-redis, default) or `client: 'ioredis'`, against both Redis and Valkey servers.
+- BullMQ URL connections require `ioredis` to also be installed (`npm install bullmq ioredis`).
+- `createQueueManager` lazily constructs providers; `warmup()` initializes all, `close()` is idempotent.
+- `createTypedQueue` type-checks payload shapes per destination.
+- The in-memory fake driver ships deterministic controls: `waitUntilIdle()`, `flush()`, `pending()`, `deadLetters()`, `failNext()`.
+
+## Documentation
+
+- [Examples](https://mohamedhabibwork.github.io/queuekit/examples.html): produce and consume end to end for every provider, plus manager, typed registry, middleware, and the testing fake.
+- [Provider semantics](https://mohamedhabibwork.github.io/queuekit/providers.html): acknowledgement and capability tables, delivery and retry behavior.
+- [Architecture](https://mohamedhabibwork.github.io/queuekit/architecture.html): runtime-neutral core, isolated adapters, lazy manager.
+- [Custom providers](https://mohamedhabibwork.github.io/queuekit/custom-providers.html): `defineQueueProvider` and `createQueueKit`.
+- [Publishing](https://mohamedhabibwork.github.io/queuekit/publishing.html): release and secrets workflow.
+
+## API surface
+
+- Entry points: `@mohamedhabibwork/queuekit` (core, factory, manager, registry, codecs, errors), `/kafka`, `/rabbitmq`, `/bullmq`, `/redis`, `/nats`, `/sqs`, `/custom`, `/testing`.
+- Core call shapes:
+  - `publish(destination, { type?, payload, headers?, correlationId?, traceId? }, options?)` — `options.delay`, `priority`, `ttl`, `scheduleAt`, `idempotencyKey`, `retry`, and provider-specific `native`.
+  - `consume(destination, handler, options?)` — handler receives `{ message, ack, signal }`; `options.concurrency`, `autoAck`, `timeout`, `native`.
+  - `ack.complete()` / `ack.retry?(options?)` / `ack.reject?(options?)` — broker-mapped, see provider semantics.
+- Package: [npm](https://www.npmjs.com/package/@mohamedhabibwork/queuekit) · [GitHub](https://github.com/mohamedhabibwork/queuekit) · MIT.
