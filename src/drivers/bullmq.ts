@@ -40,7 +40,9 @@ export class BullMqProvider extends BaseQueueProvider<'bullmq'> {
       const envelope = job.data as QueueMessage<TPayload>;
       const ack: BullMqAcknowledgement = { native: job as Job<unknown>, complete: async () => undefined };
       await handler({ message: { id: job.id, type: envelope.type, payload: envelope.payload, headers: envelope.headers ?? {}, timestamp: envelope.timestamp, correlationId: envelope.correlationId, causationId: envelope.causationId, traceId: envelope.traceId, native: job }, ack, signal: controller.signal });
-    }, { connection: this.config.connection as never, prefix: this.config.prefix, concurrency: options?.concurrency, ...options?.native });
+    // `concurrency: undefined` is not the same as omitting the key: BullMQ
+    // rejects an explicit undefined instead of applying its default.
+    }, { connection: this.config.connection as never, prefix: this.config.prefix, ...(options?.concurrency !== undefined ? { concurrency: options.concurrency } : {}), ...options?.native });
     this.#workers.add(worker);
     return createConsumer({ pause: async () => worker.pause(), resume: async () => worker.resume(), close: async () => { controller.abort(); this.#workers.delete(worker); await worker.close(); } });
   }

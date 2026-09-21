@@ -9,6 +9,53 @@ export interface RedisPublishOptions { readonly maxLength?: number; readonly app
 export interface RedisConsumerOptions { readonly blockMs?: number; readonly count?: number; }
 export type RedisAcknowledgement = QueueAcknowledgement<unknown>;
 type RedisClient = Awaited<ReturnType<typeof import('redis')['createClient']>>;
+type RedisStreamMessage<TPayload> = QueueMessage<TPayload> & { readonly attempt?: number };
+
+/** The Redis commands needed to settle one Streams entry. Kept small for deterministic tests. */
+export interface RedisStreamCommandClient {
+  sendCommand<T = unknown>(command: string[]): Promise<T>;
+}
+
+/**
+ * Redis Streams has no native retry or dead-letter command. Retrying means
+ * adding a new entry before acknowledging the old pending one; if adding fails,
+ * the old entry remains pending rather than being lost.
+ */
+export function createRedisStreamAcknowledgement<TPayload>(
+  client: RedisStreamCommandClient,
+  destination: string,
+  group: string,
+  entryId: string,
+  message: RedisStreamMessage<TPayload>,
+  attempt: number,
+): RedisAcknowledgement {
+  let settled = false;
+  const complete = async (): Promise<void> => {
+    if (settled) return;
+    await client.sendCommand(['XACK', destination, group, entryId]);
+    settled = true;
+  };
+  const retry = async (): Promise<void> => {
+    if (settled) return;
+    await client.sendCommand([
+      'XADD',
+      destination,
+      '*',
+      'data',
+      JSON.stringify({ ...message, attempt: attempt + 1 }),
+    ]);
+    await complete();
+  };
+  return {
+    native: undefined,
+    complete,
+    retry,
+    reject: async (options) => {
+      if (options?.requeue) await retry();
+      else await complete();
+    },
+  };
+}
 export class RedisProvider extends BaseQueueProvider<'redis'> {
   readonly name = 'redis' as const;
   readonly capabilities: QueueCapabilities;
@@ -22,9 +69,37 @@ export class RedisProvider extends BaseQueueProvider<'redis'> {
   async consume<TPayload>(destination: string, handler: QueueHandler<TPayload, unknown, RedisAcknowledgement>, options?: ConsumerOptions<RedisConsumerOptions>): Promise<QueueConsumer> { return this.config.mode === 'pubsub' ? this.#consumePubsub(destination, handler, options) : this.#consumeStream(destination, handler, options); }
   async #consumePubsub<TPayload>(destination: string, handler: QueueHandler<TPayload, unknown, RedisAcknowledgement>, _options?: ConsumerOptions<RedisConsumerOptions>): Promise<QueueConsumer> { const subscriber = (await this.#getClient()).duplicate(); subscriber.on('error', () => undefined); await subscriber.connect(); this.#subscribers.add(subscriber); const controller = new AbortController(); await subscriber.subscribe(destination, async (raw) => { const envelope = jsonCodec.decode(raw) as QueueMessage<TPayload>; const ack: RedisAcknowledgement = { native: undefined, complete: async () => undefined }; await handler({ message: { ...envelope, headers: envelope.headers ?? {}, native: raw }, ack, signal: controller.signal }); }); return createConsumer({ close: async () => { controller.abort(); this.#subscribers.delete(subscriber); await subscriber.unsubscribe(destination); await subscriber.quit(); } }); }
   async #consumeStream<TPayload>(destination: string, handler: QueueHandler<TPayload, unknown, RedisAcknowledgement>, options?: ConsumerOptions<RedisConsumerOptions>): Promise<QueueConsumer> { const client = await this.#getClient(); const group = this.config.group ?? 'queuekit'; const consumerName = this.config.consumer ?? `queuekit-${Math.random().toString(36).slice(2)}`; try { await client.sendCommand(['XGROUP', 'CREATE', destination, group, '0', 'MKSTREAM']); } catch { /* group can already exist */ }
-    const controller = new AbortController(); let paused = false; const loop = async () => { while (!controller.signal.aborted) { if (paused) { await new Promise((resolve) => setTimeout(resolve, 20)); continue; } const response = await client.sendCommand<unknown>(['XREADGROUP', 'GROUP', group, consumerName, 'COUNT', String(options?.native?.count ?? 1), 'BLOCK', String(options?.native?.blockMs ?? 1000), 'STREAMS', destination, '>']); for (const item of streamEntries(response)) { const envelope = jsonCodec.decode(item.data) as QueueMessage<TPayload>; let settled = false; const ack: RedisAcknowledgement = { native: item.raw, complete: async () => { if (!settled) { await client.sendCommand(['XACK', destination, group, item.id]); settled = true; } } }; await handler({ message: { ...envelope, id: envelope.id ?? item.id, headers: envelope.headers ?? {}, native: item.raw }, ack, signal: controller.signal }); if (options?.autoAck) await ack.complete(); } } }; void loop(); return createConsumer({ pause: async () => { paused = true; }, resume: async () => { paused = false; }, close: async () => { controller.abort(); } }); }
+    const controller = new AbortController(); let paused = false; const loop = async () => { while (!controller.signal.aborted) { if (paused) { await new Promise((resolve) => setTimeout(resolve, 20)); continue; } try { const response = await client.sendCommand<unknown>(['XREADGROUP', 'GROUP', group, consumerName, 'COUNT', String(options?.native?.count ?? 1), 'BLOCK', String(options?.native?.blockMs ?? 1000), 'STREAMS', destination, '>']); for (const item of streamEntries(response)) { const envelope = jsonCodec.decode(item.data) as RedisStreamMessage<TPayload>; const attempt = envelope.attempt ?? 1; const acknowledgement = createRedisStreamAcknowledgement(client, destination, group, item.id, envelope, attempt); const ack: RedisAcknowledgement = { ...acknowledgement, native: item.raw }; await handler({ message: { ...envelope, id: envelope.id ?? item.id, attempt, headers: envelope.headers ?? {}, native: item.raw }, ack, signal: controller.signal }); if (options?.autoAck) await ack.complete(); } } catch (error) { if (controller.signal.aborted) return; // A thrown handler or a dropped connection must not end the loop: the
+      // consumer would keep the client's entries pending forever and say
+      // nothing, which looks exactly like a queue that stopped working.
+      console.error(`[queuekit/redis] consume loop error on ${destination}`, error); await new Promise((resolve) => setTimeout(resolve, 500)); } } }; void loop(); return createConsumer({ pause: async () => { paused = true; }, resume: async () => { paused = false; }, close: async () => { controller.abort(); } }); }
   native(): RedisClient | undefined { return this.#client; }
   async close(): Promise<void> { this.markClosed(); await Promise.all([...this.#subscribers].map((client) => client.quit())); await this.#client?.quit(); this.#subscribers.clear(); this.#client = undefined; }
 }
-function streamEntries(value: unknown): readonly { readonly id: string; readonly data: string; readonly raw: unknown }[] { if (!Array.isArray(value)) return []; const entries: { id: string; data: string; raw: unknown }[] = []; for (const stream of value) { if (!Array.isArray(stream) || !Array.isArray(stream[1])) continue; for (const entry of stream[1]) { if (!Array.isArray(entry) || typeof entry[0] !== 'string' || !Array.isArray(entry[1])) continue; const index = entry[1].indexOf('data'); if (index >= 0 && typeof entry[1][index + 1] === 'string') entries.push({ id: entry[0], data: entry[1][index + 1], raw: entry }); } } return entries; }
+/** One XREADGROUP entry whose `data` field carries the queuekit envelope. */
+interface RedisStreamEntry { readonly id: string; readonly data: string; readonly raw: unknown }
+/**
+ * Normalizes the two shapes `sendCommand` returns for XREADGROUP across
+ * node-redis versions: the raw array form `[[stream, [[id, ['data', json]]]]]`
+ * (v4) and the parsed object form `{ stream: [[id, ['data', json]]] }` (v5+).
+ * Only the array shape was understood, so on v5+ every read entry was
+ * discarded — the message stayed pending and the handler never ran, with no
+ * error anywhere.
+ */
+export function streamEntries(value: unknown): readonly RedisStreamEntry[] {
+  if (value == null) return [];
+  const streams: unknown[] = Array.isArray(value) ? value : Object.values(value as Record<string, unknown>);
+  const entries: RedisStreamEntry[] = [];
+  // Array form: each stream is [name, entries] — name is a string. Object
+  // form: the values are the entries arrays themselves, so stream[0] is an
+  // entry ([id, fields]) rather than a name. Testing the first element's type
+  // is what tells the two apart; shape alone cannot, because an entries array
+  // of two-plus entries has an array at index 1 too.
+  for (const stream of streams) {
+    const list = Array.isArray(stream) && typeof stream[0] === 'string' ? stream[1] : stream;
+    if (!Array.isArray(list)) continue;
+    for (const entry of list) { if (!Array.isArray(entry) || typeof entry[0] !== 'string' || !Array.isArray(entry[1])) continue; const index = entry[1].indexOf('data'); if (index >= 0 && typeof entry[1][index + 1] === 'string') entries.push({ id: entry[0], data: entry[1][index + 1] as string, raw: entry }); }
+  }
+  return entries;
+}
 export async function createRedisQueue(config: RedisConfig): Promise<RedisProvider> { return new RedisProvider(config); }

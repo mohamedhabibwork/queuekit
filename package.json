@@ -57,6 +57,7 @@
     "clean": "rimraf dist coverage",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run tests/e2e",
     "test:types": "tsc -p tsconfig.typecheck.json --noEmit",
     "check": "npm run build && npm run test && npm run test:types",
     "pack:check": "npm pack --dry-run",
@@ -96,6 +97,7 @@
     "@aws-sdk/client-sqs": "^3.1128.0",
     "amqplib": "^0.10.9",
     "bullmq": "^6.3.4",
+    "ioredis": "^5.6.1",
     "kafkajs": "^2.2.4",
     "nats": "^2.29.3",
     "redis": "^6.2.1"
@@ -108,6 +110,9 @@
       "optional": true
     },
     "bullmq": {
+      "optional": true
+    },
+    "ioredis": {
       "optional": true
     },
     "kafkajs": {
@@ -125,6 +130,7 @@
     "@types/amqplib": "^0.10.7",
     "amqplib": "^0.10.9",
     "bullmq": "^6.3.4",
+    "ioredis": "^5.11.1",
     "kafkajs": "^2.2.4",
     "nats": "^2.29.3",
     "redis": "^6.2.1",
