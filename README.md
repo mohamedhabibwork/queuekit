@@ -81,7 +81,7 @@ await (await queues.provider('jobs')).publish('emails', {
 | NATS | `@mohamedhabibwork/queuekit/nats` | Pub/Sub; JetStream publishing |
 | Amazon SQS | `@mohamedhabibwork/queuekit/sqs` | Message queue |
 
-See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics.
+See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics. BullMQ no longer bundles a Redis client: when `connection` is a URL string, also install `ioredis` (`npm install bullmq ioredis`).
 
 ## Custom providers and tests
 
@@ -141,9 +141,20 @@ npm pack --dry-run
 
 The CI matrix tests Node 20, 22, 24, and 26; Bun; Deno; and TypeScript 5.9, 6, and 7. Local Node 22 and Bun checks are run before release; Deno is covered in GitHub Actions when it is not installed locally.
 
+### End-to-end tests
+
+`tests/e2e` runs every real driver — Redis (pub/sub and streams), RabbitMQ, Kafka, NATS, SQS, and BullMQ — through a produce → consume → acknowledge round-trip against live brokers:
+
+```sh
+docker compose up -d   # redis, rabbitmq, kafka, nats, localstack (SQS)
+npm test               # e2e suites run when a broker is reachable and skip otherwise
+```
+
+Broker endpoints can be overridden with the `QUEUEKIT_E2E_REDIS_URL`, `QUEUEKIT_E2E_RABBITMQ_URL`, `QUEUEKIT_E2E_KAFKA_BROKER`, `QUEUEKIT_E2E_NATS_URL`, and `QUEUEKIT_E2E_SQS_ENDPOINT` environment variables. The compose stack uses non-default local ports (Redis `6390`, RabbitMQ `5673`) so it never collides with an already-running native broker.
+
 ## Publishing
 
-Publishing runs only from the Release workflow. Add an npm automation token as the repository Actions secret `NPM_TOKEN`; a local `.env` file cannot be read by GitHub-hosted runners. Details are in [docs/publishing.md](docs/publishing.md).
+Publishing runs only from the Release workflow. Add an npm automation token as the repository Actions secret `NPM_TOKEN`; a local `.env` file cannot be read by GitHub-hosted runners. Details are in the [publishing guide](https://mohamedhabibwork.github.io/queuekit/publishing.html).
 
 ## License
 

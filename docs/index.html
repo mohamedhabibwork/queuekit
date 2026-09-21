@@ -1,2 +1,89 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>QueueKit</title><style>body{max-width:820px;margin:0 auto;padding:3rem 1.25rem;font:17px/1.6 system-ui,sans-serif;color:#172033;background:#fbfcff}code{background:#edf1f7;padding:.15em .35em;border-radius:4px}a{color:#2855c5}h1{font-size:3rem;line-height:1.1;margin-bottom:.4rem}.tag{font-size:1.25rem;color:#526075}pre{overflow:auto;background:#18212f;color:#e6edf5;padding:1rem;border-radius:8px}</style></head><body><main><h1>QueueKit</h1><p class="tag">Typed queue, messaging, pub/sub, and stream infrastructure without losing provider-native capabilities.</p><p>Runtime-neutral core for Node 20+, Bun, and Deno 2+.</p><pre><code>npm install @mohamedhabibwork/queuekit kafkajs</code></pre><h2>What ships in v0.1</h2><p>BullMQ, Kafka, RabbitMQ, Redis Pub/Sub and Streams, NATS Core, Amazon SQS, typed registries, a lazy multi-provider manager, middleware, codecs, a custom-provider API, and an in-memory fake testing driver with deterministic delivery controls.</p><h2>Design</h2><p>Use one consistent lifecycle and message model, while keeping provider-native options under <code>native</code>. Capabilities describe what each broker actually supports; QueueKit does not claim universal exactly-once delivery.</p><p><a href="https://github.com/mohamedhabibwork/queuekit">GitHub</a> · <a href="architecture.md">Architecture</a> · <a href="providers.md">Provider semantics</a> · <a href="custom-providers.md">Custom providers</a> · <a href="publishing.md">Publishing</a></p></main></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QueueKit — typed queues, messaging, pub/sub &amp; streams</title>
+  <meta name="description" content="Runtime-neutral TypeScript queues, messaging, pub/sub, and streams without losing provider-native types.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+    <nav class="nav">
+      <div class="nav-label">Get started</div>
+      <a href="index.html" aria-current="page">Overview</a>
+      <a href="examples.html">Examples</a>
+      <div class="nav-label">Reference</div>
+      <a href="providers.html">Provider semantics</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="custom-providers.html">Custom providers</a>
+      <a href="publishing.html">Publishing</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <section class="hero">
+      <span class="pill">v0.2</span>
+      <h1>Typed queues, messaging, pub/sub &amp; streams. Without losing what makes each broker special.</h1>
+      <p class="lead">One consistent lifecycle and message model for BullMQ, Kafka, RabbitMQ, Redis, NATS, and SQS — with provider-native options, responses, and acknowledgements preserved through the types.</p>
+      <div class="hero-badges">
+        <span>Node 20+</span><span>Bun</span><span>Deno 2+</span><span>TypeScript strict</span><span>Zero lock-in</span>
+      </div>
+      <div class="cta-row">
+        <a class="cta cta-primary" href="examples.html">Browse the examples</a>
+        <a class="cta cta-ghost" href="https://github.com/mohamedhabibwork/queuekit">View on GitHub</a>
+      </div>
+    </section>
+
+    <h2>Install once, add only the SDK you use</h2>
+    <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit kafkajs</code></pre></div>
+    <p>Every broker SDK is an optional peer dependency. If one is missing, QueueKit throws a <code>QueueConfigError</code> with the exact install command.</p>
+
+    <h2>Quick start</h2>
+    <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const kafka = await createQueue({
+  type: 'kafka',
+  clientId: 'orders-api',
+  brokers: ['localhost:9092'],
+});
+
+await kafka.publish('orders.created', {
+  payload: { orderId: 'ord_123' },
+}, {
+  native: { partition: 2, headers: { source: 'api' } },
+});</code></pre></div>
+    <p>Provider-native options live under <code>native</code>: BullMQ options can never be accidentally passed to Kafka, and vice versa.</p>
+
+    <h2>Providers</h2>
+    <div class="cards">
+      <a class="card" href="examples.html#bullmq"><span class="tag">Job queue</span><h3>BullMQ</h3><p>Delayed, retried, prioritized jobs on Redis.</p></a>
+      <a class="card" href="examples.html#kafka"><span class="tag">Event stream</span><h3>Kafka</h3><p>Partitions, consumer groups, offset commits.</p></a>
+      <a class="card" href="examples.html#rabbitmq"><span class="tag">Message queue</span><h3>RabbitMQ</h3><p>Ack / nack / reject, priority, TTL, dead letters.</p></a>
+      <a class="card" href="examples.html#redis"><span class="tag">Pub/Sub or stream</span><h3>Redis</h3><p>Pub/Sub fan-out or Streams with consumer groups.</p></a>
+      <a class="card" href="examples.html#nats"><span class="tag">Pub/Sub</span><h3>NATS</h3><p>Core pub/sub and queue groups; JetStream publishing.</p></a>
+      <a class="card" href="examples.html#sqs"><span class="tag">Message queue</span><h3>Amazon SQS</h3><p>Visibility timeouts, delays, FIFO deduplication.</p></a>
+    </div>
+
+    <h2>Why it looks like this</h2>
+    <div class="cards">
+      <div class="card"><span class="tag">Honest</span><h3>Capabilities, not illusions</h3><p>A provider advertises only what its broker really supports. Kafka partitions never masquerade as priority.</p></div>
+      <div class="card"><span class="tag">Typed</span><h3>Native types flow through</h3><p>Options, publish results, incoming messages, and acknowledgements keep their provider-native types.</p></div>
+      <div class="card"><span class="tag">Testable</span><h3>In-memory fake driver</h3><p>Deterministic delivery, delays, retries, and dead letters with <code>waitUntilIdle()</code> and <code>flush()</code> controls.</p></div>
+      <div class="card"><span class="tag">Neutral</span><h3>Runtime-neutral core</h3><p>The core never imports a broker SDK and runs on Node 20+, Bun, and Deno 2+.</p></div>
+    </div>
+
+    <div class="note"><strong>Guarantees.</strong> QueueKit does not claim universal exactly-once delivery. Delivery, retry, ordering, acknowledgement, and dead-letter behavior are broker-specific — use <code>capabilities</code>, provider-native configuration, and idempotent consumers. <code>message.metadata</code> is application-only and is never sent to a broker.</div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+<script>window.hljs && hljs.highlightAll();</script>
+</body>
+</html>

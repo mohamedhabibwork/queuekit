@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Provider semantics — QueueKit</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+    <nav class="nav">
+      <div class="nav-label">Get started</div>
+      <a href="index.html">Overview</a>
+      <a href="examples.html">Examples</a>
+      <div class="nav-label">Reference</div>
+      <a href="providers.html" aria-current="page">Provider semantics</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="custom-providers.html">Custom providers</a>
+      <a href="publishing.html">Publishing</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <h1>Provider semantics</h1>
+    <p class="lead">Install the corresponding optional peer dependency before creating a provider. If it is missing, QueueKit throws a <code>QueueConfigError</code> with the exact install command.</p>
+
+    <h2>Acknowledgements</h2>
+    <table>
+      <thead>
+        <tr><th>Provider</th><th>complete()</th><th>retry()</th><th>reject()</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>BullMQ</td><td>no-op</td><td>—</td><td>—</td><td>Returning from the worker completes the job; throwing fails it.</td></tr>
+        <tr><td>Kafka</td><td>commits the next offset</td><td>—</td><td>—</td><td>Set <code>autoAck</code> to commit after a successful handler.</td></tr>
+        <tr><td>RabbitMQ</td><td><code>ack</code></td><td><code>nack</code> + requeue</td><td><code>reject</code></td><td><code>reject({ requeue: true })</code> requeues instead of dropping.</td></tr>
+        <tr><td>Redis Streams</td><td><code>XACK</code></td><td><code>XADD</code> with <code>attempt + 1</code>, then <code>XACK</code></td><td>complete, or requeue</td><td>Retries append a new entry; the old one is never lost if the append fails.</td></tr>
+        <tr><td>Redis Pub/Sub</td><td>no-op</td><td>—</td><td>—</td><td>Ephemeral fan-out; no persistence.</td></tr>
+        <tr><td>NATS Core</td><td>no-op</td><td>—</td><td>—</td><td>Messages are ephemeral. JetStream publishing available via the adapter.</td></tr>
+        <tr><td>Amazon SQS</td><td>deletes the message</td><td>changes visibility timeout</td><td>—</td><td><code>retry({ delay })</code> sets when the message becomes visible again.</td></tr>
+        <tr><td>Memory fake</td><td>records as acknowledged</td><td>requeues with <code>attempt + 1</code></td><td>dead-letters (or requeues)</td><td>Thrown handlers retry up to <code>setMaxAttempts()</code> (default 3), then dead-letter.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Capabilities by provider</h2>
+    <table>
+      <thead>
+        <tr><th>Provider</th><th>Kind</th><th>Batch</th><th>Delayed</th><th>Retries</th><th>Priority</th><th>Dead letter</th><th>Groups</th><th>Ordering</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>BullMQ</td><td>job</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Kafka</td><td>stream</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>RabbitMQ</td><td>queue</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+        <tr><td>Redis Streams</td><td>stream</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Redis Pub/Sub</td><td>pubsub</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>NATS Core</td><td>pubsub</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>queue groups</td><td>—</td></tr>
+        <tr><td>Amazon SQS</td><td>queue</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>FIFO</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Delivery and retries</h2>
+    <p>Providers determine delivery and retry behavior. The normalized <code>delay</code>, <code>priority</code>, <code>ttl</code>, and <code>retry</code> fields on publish options are convenience values used only where the provider supports them; use <code>native</code> for broker-specific knobs.</p>
+    <div class="note"><strong>Do not assume exactly-once delivery.</strong> QueueKit does not claim universal exactly-once delivery — make handlers idempotent. <code>message.metadata</code> is application-only and is never implicitly sent to a broker.</div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+<script>window.hljs && hljs.highlightAll();</script>
+</body>
+</html>

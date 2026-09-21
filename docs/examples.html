@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Examples — QueueKit</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+    <nav class="nav">
+      <div class="nav-label">Get started</div>
+      <a href="index.html">Overview</a>
+      <a href="examples.html" aria-current="page">Examples</a>
+      <div class="nav-label">Reference</div>
+      <a href="providers.html">Provider semantics</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="custom-providers.html">Custom providers</a>
+      <a href="publishing.html">Publishing</a>
+    </nav>
+    <div class="sidebar-footer">
+      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+    </div>
+  </aside>
+
+  <main class="content">
+    <h1>Examples</h1>
+    <p class="lead">Produce and consume end to end for every provider. Each snippet follows the same shape: create the queue, publish, consume with an explicit acknowledgement, close cleanly. All snippets run against the local broker stack in the repository (<code>docker compose up -d</code>).</p>
+
+    <nav class="toc">
+      <h3>On this page</h3>
+      <ul>
+        <li><a href="#bullmq">BullMQ</a></li>
+        <li><a href="#kafka">Kafka</a></li>
+        <li><a href="#rabbitmq">RabbitMQ</a></li>
+        <li><a href="#redis-streams">Redis Streams</a></li>
+        <li><a href="#redis-pubsub">Redis Pub/Sub</a></li>
+        <li><a href="#nats">NATS</a></li>
+        <li><a href="#sqs">Amazon SQS</a></li>
+        <li><a href="#manager">Multi-provider manager</a></li>
+        <li><a href="#registry">Typed registry</a></li>
+        <li><a href="#middleware">Middleware</a></li>
+        <li><a href="#testing">Testing with the fake driver</a></li>
+      </ul>
+    </nav>
+
+    <!-- BullMQ -->
+    <section class="provider-section" id="bullmq">
+      <div class="provider-heading"><h2>BullMQ</h2><span class="tag">Job queue</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit bullmq ioredis</code></pre></div>
+      <p>BullMQ no longer bundles a Redis client — when <code>connection</code> is a URL string, also install <code>ioredis</code>.</p>
+      <h3>Produce</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const jobs = await createQueue({
+  type: 'bullmq',
+  connection: 'redis://localhost:6379',
+});
+
+const result = await jobs.publish('emails', {
+  type: 'welcome',
+  payload: { userId: 'u_1' },
+}, {
+  delay: 5_000,
+  priority: 2,
+  native: { attempts: 5, backoff: { type: 'exponential', delay: 1_000 } },
+});
+
+console.log(result.messageId); // BullMQ job id
+await jobs.close();</code></pre></div>
+      <h3>Consume</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await jobs.consume&lt;{ userId: string }&gt;('emails', async ({ message }) => {
+  await sendWelcome(message.payload.userId);
+  // returning normally completes the job; throwing fails it
+}, { concurrency: 4 });
+
+await consumer.close();</code></pre></div>
+      <div class="note"><strong>Ack:</strong> returning from the worker completes the job — the normalized acknowledgement is a no-op.</div>
+    </section>
+
+    <!-- Kafka -->
+    <section class="provider-section" id="kafka">
+      <div class="provider-heading"><h2>Kafka</h2><span class="tag">Event stream</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit kafkajs</code></pre></div>
+      <h3>Produce</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const kafka = await createQueue({
+  type: 'kafka',
+  clientId: 'orders-api',
+  brokers: ['localhost:9092'],
+});
+
+const result = await kafka.publish('orders.created', {
+  type: 'order.placed',
+  payload: { orderId: 'ord_123' },
+  traceId: 'trace_abc',
+}, {
+  native: { partition: 2, headers: { source: 'api' } },
+});
+
+console.log(result.partition, result.offset); // kafkajs RecordMetadata stays on result.native
+await kafka.close();</code></pre></div>
+      <h3>Consume</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await kafka.consume&lt;{ orderId: string }&gt;('orders.created', async ({ message, ack }) => {
+  await fulfil(message.payload.orderId);
+  await ack.complete(); // commits the next offset for this message
+}, {
+  native: { groupId: 'fulfilment-workers', fromBeginning: true },
+});
+
+await consumer.close();</code></pre></div>
+      <p><code>native.groupId</code> is required. Set <code>autoAck: true</code> to commit after every successful handler instead of calling <code>ack.complete()</code> yourself.</p>
+    </section>
+
+    <!-- RabbitMQ -->
+    <section class="provider-section" id="rabbitmq">
+      <div class="provider-heading"><h2>RabbitMQ</h2><span class="tag">Message queue</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit amqplib</code></pre></div>
+      <h3>Produce</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const rabbit = await createQueue({ type: 'rabbitmq', url: 'amqp://localhost' });
+
+await rabbit.publish('emails', {
+  payload: { to: 'person@example.com' },
+  correlationId: 'corr_1',
+}, {
+  priority: 5,
+  ttl: 60_000,
+  native: { persistent: true },
+});
+
+await rabbit.close();</code></pre></div>
+      <h3>Consume</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await rabbit.consume&lt;{ to: string }&gt;('emails', async ({ message, ack }) => {
+  const delivered = await send(message.payload.to);
+  if (delivered) await ack.complete();
+  else await ack.retry?.();          // nack with requeue — the broker redelivers
+}, { native: { prefetch: 10 } });
+
+await consumer.close();</code></pre></div>
+      <div class="note"><strong>Ack:</strong> <code>complete</code>, <code>retry</code>, and <code>reject</code> map to <code>ack</code>, <code>nack</code>, and <code>reject</code>.</div>
+    </section>
+
+    <!-- Redis Streams -->
+    <section class="provider-section" id="redis-streams">
+      <div class="provider-heading"><h2>Redis Streams</h2><span class="tag">Stream</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit redis</code></pre></div>
+      <h3>Produce</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const stream = await createQueue({
+  type: 'redis',
+  mode: 'streams',
+  url: 'redis://localhost:6379',
+  group: 'billing',
+  consumer: 'worker-a',
+});
+
+const result = await stream.publish('payments', {
+  payload: { paymentId: 'pay_1' },
+});
+console.log(result.messageId); // the XADD entry id, e.g. "1730000000000-0"
+
+await stream.close();</code></pre></div>
+      <h3>Consume</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await stream.consume&lt;{ paymentId: string }&gt;('payments', async ({ message, ack }) => {
+  const ok = await capture(message.payload.paymentId);
+  if (ok) await ack.complete();      // XACK — the entry leaves the pending list
+  else await ack.retry?.();          // XADD a new entry with attempt + 1, then XACK the old one
+});
+
+await consumer.close();</code></pre></div>
+      <p>The consumer group is created at id <code>0</code>, so entries published before the first consumer attaches are still delivered — a new group always starts with the stream's backlog.</p>
+    </section>
+
+    <!-- Redis Pub/Sub -->
+    <section class="provider-section" id="redis-pubsub">
+      <div class="provider-heading"><h2>Redis Pub/Sub</h2><span class="tag">Pub/Sub</span></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const pubsub = await createQueue({ type: 'redis', mode: 'pubsub', url: 'redis://localhost:6379' });
+
+// Core pub/sub only reaches live subscribers — subscribe before publishing.
+const consumer = await pubsub.consume&lt;{ temperature: number }&gt;('sensor.readings', ({ message }) => {
+  console.log(message.payload.temperature);
+});
+
+const result = await pubsub.publish('sensor.readings', { payload: { temperature: 21 } });
+console.log(result.native); // 1 — the number of subscribers that received the fan-out
+
+await consumer.close();
+await pubsub.close();</code></pre></div>
+      <div class="note"><strong>Ack:</strong> pub/sub is fire-and-forget — acknowledgements are no-ops. Use <a href="#redis-streams">Streams mode</a> when you need persistence, groups, or retries.</div>
+    </section>
+
+    <!-- NATS -->
+    <section class="provider-section" id="nats">
+      <div class="provider-heading"><h2>NATS</h2><span class="tag">Pub/Sub</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit nats</code></pre></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const nats = await createQueue({ type: 'nats', servers: ['nats://localhost:4222'], mode: 'core' });
+
+// Plain subscribe: every subscriber sees every message.
+const all = await nats.consume&lt;{ userId: string }&gt;('user.signed.up', ({ message }) => {
+  audit(message.payload.userId);
+});
+
+// Queue group: each message goes to exactly one subscriber — cheap horizontal scaling.
+const worker = await nats.consume&lt;{ userId: string }&gt;('user.signed.up', ({ message }) => {
+  sendEmail(message.payload.userId);
+}, { native: { queue: 'mailer-workers' } });
+
+await nats.publish('user.signed.up', { payload: { userId: 'u_1' } });
+
+await all.close();
+await worker.close();
+await nats.close();</code></pre></div>
+      <div class="note"><strong>Ack:</strong> core NATS messages are ephemeral and acknowledgements are no-ops. JetStream publishing is supported via <code>mode: 'jetstream'</code>; for JetStream pull consumers use <code>native()</code> directly in v0.2.</div>
+    </section>
+
+    <!-- SQS -->
+    <section class="provider-section" id="sqs">
+      <div class="provider-heading"><h2>Amazon SQS</h2><span class="tag">Message queue</span></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit @aws-sdk/client-sqs</code></pre></div>
+      <h3>Produce</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
+
+const sqs = await createQueue({ type: 'sqs', region: 'eu-central-1' });
+
+// The destination is the queue URL (or set config.queueUrl once).
+await sqs.publish(process.env.QUEUE_URL!, {
+  payload: { taskId: 'task-1' },
+}, {
+  delay: 10,
+  idempotencyKey: 'task-1', // → MessageDeduplicationId on FIFO queues
+  native: { MessageGroupId: 'jobs' },
+});
+
+await sqs.close();</code></pre></div>
+      <h3>Consume</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await sqs.consume&lt;{ taskId: string }&gt;(process.env.QUEUE_URL!, async ({ message, ack }) => {
+  const done = await runTask(message.payload.taskId);
+  if (done) await ack.complete();               // deletes the message
+  else await ack.retry?.({ delay: 30_000 });    // visibility timeout back to 30s
+}, {
+  native: { MaxNumberOfMessages: 5, WaitTimeSeconds: 10 },
+});
+
+await consumer.close();</code></pre></div>
+    </section>
+
+    <!-- Manager -->
+    <section class="provider-section" id="manager">
+      <div class="provider-heading"><h2>Multi-provider manager</h2><span class="tag">Composition</span></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueueManager } from '@mohamedhabibwork/queuekit';
+
+const queues = createQueueManager({
+  default: 'jobs',
+  providers: {
+    jobs: { type: 'bullmq', connection: 'redis://localhost:6379' },
+    events: { type: 'kafka', clientId: 'api', brokers: ['localhost:9092'] },
+  },
+});
+
+// Providers are created lazily — the first .provider() call loads that SDK.
+await (await queues.provider('jobs')).publish('emails', { type: 'welcome', payload: { userId: 'u_1' } });
+await (await queues.default()).health();
+await queues.warmup();  // initialize everything, e.g. at boot
+await queues.close();   // closes all initialized consumers and clients</code></pre></div>
+    </section>
+
+    <!-- Registry -->
+    <section class="provider-section" id="registry">
+      <div class="provider-heading"><h2>Typed registry</h2><span class="tag">Type safety</span></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createTypedQueue } from '@mohamedhabibwork/queuekit';
+
+type Events = {
+  'user.signedUp': { userId: string };
+  'order.placed': { orderId: string; total: number };
+};
+
+const events = createTypedQueue&lt;Events&gt;(kafka);
+
+await events.publish('user.signedUp', { userId: 'u_1' }); // payload type checked per topic
+await events.publish('order.placed', { orderId: 'ord_1', total: 99 });</code></pre></div>
+    </section>
+
+    <!-- Middleware -->
+    <section class="provider-section" id="middleware">
+      <div class="provider-heading"><h2>Middleware</h2><span class="tag">Cross-cutting</span></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const kafka = await createQueue({ type: 'kafka', clientId: 'api', brokers: ['localhost:9092'] });
+
+kafka.use(async (context, next) => {
+  const started = Date.now();
+  await next();
+  console.log(`${context.provider} ${context.operation} ${context.destination} in ${Date.now() - started}ms`);
+});</code></pre></div>
+      <p>Middleware wraps every publish and publishMany with the operation context: provider, operation, destination, trace, and correlation ids.</p>
+    </section>
+
+    <!-- Testing -->
+    <section class="provider-section" id="testing">
+      <div class="provider-heading"><h2>Testing with the fake driver</h2><span class="tag">Testing</span></div>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createFakeQueue } from '@mohamedhabibwork/queuekit/testing';
+
+const testQueue = createFakeQueue();
+
+// autoAck defaults to true on the fake so simple assertions need no ack dance.
+const received: string[] = [];
+await testQueue.consume&lt;{ email: string }&gt;('emails', ({ message }) => {
+  received.push(message.payload.email);
+});
+
+// Messages published before a consumer attaches are queued and delivered FIFO.
+await testQueue.publish('emails', { type: 'welcome', payload: { email: 'person@example.com' } });
+await testQueue.waitUntilIdle();                    // await all in-flight handler work
+
+expect(received).toEqual(['person@example.com']);
+expect(testQueue.pending('emails')).toHaveLength(0);</code></pre></div>
+      <h3>Deterministic controls</h3>
+      <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">await testQueue.publish('emails', { payload: {} }, { delay: 60_000 });
+await testQueue.waitUntilIdle();
+testQueue.pending('emails');            // still queued — the delay has not elapsed
+await testQueue.flush();                // force delayed messages out immediately
+
+testQueue.pause(); testQueue.resume();  // hold and release delivery
+testQueue.acknowledged('emails');       // settled messages
+testQueue.deadLetters('emails');        // rejected / exhausted messages
+testQueue.failNext(new Error('broker down')); // inject the next publish failure</code></pre></div>
+      <p>The fake is a first-class driver, so <code>createQueue({ type: 'memory' })</code> and <code>createQueueManager({ providers: { jobs: { type: 'memory' } } })</code> work with the same config shape used in production. Handlers that throw are retried up to <code>setMaxAttempts()</code> (default 3) and then dead-lettered.</p>
+    </section>
+
+    <hr>
+    <p>Every produce → consume → acknowledge path shown here runs against real brokers in the repository's end-to-end suite — see <code>tests/e2e</code> and <code>docker compose up -d</code>.</p>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+<script>window.hljs && hljs.highlightAll();</script>
+</body>
+</html>
