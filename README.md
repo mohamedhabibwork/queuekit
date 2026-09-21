@@ -81,7 +81,7 @@ await (await queues.provider('jobs')).publish('emails', {
 | NATS | `@mohamedhabibwork/queuekit/nats` | Pub/Sub; JetStream publishing |
 | Amazon SQS | `@mohamedhabibwork/queuekit/sqs` | Message queue |
 
-See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics. BullMQ no longer bundles a Redis client: when `connection` is a URL string, also install `ioredis` (`npm install bullmq ioredis`).
+See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics. BullMQ no longer bundles a Redis client: when `connection` is a URL string, also install `ioredis` (`npm install bullmq ioredis`). The Redis provider works with both `node-redis` (default) and `ioredis` (`client: 'ioredis'`), against Redis and Valkey servers, and Streams consumers can dead-letter rejected entries with `native.deadLetter`.
 
 ## Custom providers and tests
 

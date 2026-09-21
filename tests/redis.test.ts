@@ -26,6 +26,73 @@ describe('RedisProvider stream acknowledgements', () => {
       ['XACK', 'jobs', 'workers', '1-0'],
     ]);
   });
+
+  it('dead-letters a reject without requeue before acknowledging the entry', async () => {
+    const commands: string[][] = [];
+    const acknowledgement = createRedisStreamAcknowledgement(
+      { sendCommand: async <T>(command: string[]) => { commands.push(command); return '9-0' as T; } },
+      'jobs',
+      'workers',
+      '1-0',
+      { id: 'job-1', payload: { invoiceId: 'invoice-1' } },
+      3,
+      'jobs:dead',
+    );
+
+    await acknowledgement.reject!();
+
+    expect(commands).toEqual([
+      [
+        'XADD',
+        'jobs:dead',
+        '*',
+        'data',
+        JSON.stringify({
+          id: 'job-1',
+          payload: { invoiceId: 'invoice-1' },
+          attempt: 3,
+          deadLetterOf: { stream: 'jobs', id: '1-0', group: 'workers' },
+        }),
+      ],
+      ['XACK', 'jobs', 'workers', '1-0'],
+    ]);
+  });
+
+  it('requeues instead of dead-lettering when reject asks for a requeue', async () => {
+    const commands: string[][] = [];
+    const acknowledgement = createRedisStreamAcknowledgement(
+      { sendCommand: async <T>(command: string[]) => { commands.push(command); return '2-0' as T; } },
+      'jobs',
+      'workers',
+      '1-0',
+      { id: 'job-1', payload: {} },
+      1,
+      'jobs:dead',
+    );
+
+    await acknowledgement.reject!({ requeue: true });
+
+    expect(commands).toEqual([
+      ['XADD', 'jobs', '*', 'data', JSON.stringify({ id: 'job-1', payload: {}, attempt: 2 })],
+      ['XACK', 'jobs', 'workers', '1-0'],
+    ]);
+  });
+
+  it('acknowledges a reject without a configured dead-letter stream', async () => {
+    const commands: string[][] = [];
+    const acknowledgement = createRedisStreamAcknowledgement(
+      { sendCommand: async <T>(command: string[]) => { commands.push(command); return '2-0' as T; } },
+      'jobs',
+      'workers',
+      '1-0',
+      { id: 'job-1', payload: {} },
+      1,
+    );
+
+    await acknowledgement.reject!();
+
+    expect(commands).toEqual([['XACK', 'jobs', 'workers', '1-0']]);
+  });
 });
 
 describe('streamEntries', () => {

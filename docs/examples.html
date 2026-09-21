@@ -150,7 +150,8 @@ await consumer.close();</code></pre></div>
     <!-- Redis Streams -->
     <section class="provider-section" id="redis-streams">
       <div class="provider-heading"><h2>Redis Streams</h2><span class="tag">Stream</span></div>
-      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit redis</code></pre></div>
+      <div class="code-block"><span class="code-lang">sh</span><pre><code class="language-sh">npm install @mohamedhabibwork/queuekit redis   # or: ioredis</code></pre></div>
+      <p>Choose the SDK with <code>client: 'redis'</code> (default) or <code>client: 'ioredis'</code>. Both work against Redis and Valkey servers — the protocol is identical.</p>
       <h3>Produce</h3>
       <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueue } from '@mohamedhabibwork/queuekit';
 
@@ -160,6 +161,7 @@ const stream = await createQueue({
   url: 'redis://localhost:6379',
   group: 'billing',
   consumer: 'worker-a',
+  client: 'ioredis', // or 'redis' (default)
 });
 
 const result = await stream.publish('payments', {
@@ -168,14 +170,21 @@ const result = await stream.publish('payments', {
 console.log(result.messageId); // the XADD entry id, e.g. "1730000000000-0"
 
 await stream.close();</code></pre></div>
-      <h3>Consume</h3>
+      <h3>Consume, retry, and dead-letter</h3>
       <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">const consumer = await stream.consume&lt;{ paymentId: string }&gt;('payments', async ({ message, ack }) => {
   const ok = await capture(message.payload.paymentId);
   if (ok) await ack.complete();      // XACK — the entry leaves the pending list
   else await ack.retry?.();          // XADD a new entry with attempt + 1, then XACK the old one
+}, {
+  native: {
+    deadLetter: 'payments:dead',     // reject() without requeue lands here
+    blockMs: 1_000,
+    count: 10,
+  },
 });
 
 await consumer.close();</code></pre></div>
+      <p>On <code>ack.reject()</code> without <code>requeue</code>, the entry is first XADDed to the dead-letter stream — keeping its payload, <code>attempt</code>, and a <code>deadLetterOf: { stream, id, group }</code> trace of where it came from — and only then acknowledged. The dead-letter stream is itself a stream, so it can be consumed, replayed, or re-driven with the same driver.</p>
       <p>The consumer group is created at id <code>0</code>, so entries published before the first consumer attaches are still delivered — a new group always starts with the stream's backlog.</p>
     </section>
 

@@ -16,6 +16,18 @@ services:
       timeout: 3s
       retries: 15
 
+  # Protocol-compatible alternative server; the redis e2e suite drives it via ioredis.
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: queuekit-valkey
+    ports:
+      - "6391:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
   rabbitmq:
     image: rabbitmq:3-alpine
     container_name: queuekit-rabbitmq

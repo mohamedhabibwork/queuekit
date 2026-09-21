@@ -40,7 +40,7 @@
         <tr><td>BullMQ</td><td>no-op</td><td>—</td><td>—</td><td>Returning from the worker completes the job; throwing fails it.</td></tr>
         <tr><td>Kafka</td><td>commits the next offset</td><td>—</td><td>—</td><td>Set <code>autoAck</code> to commit after a successful handler.</td></tr>
         <tr><td>RabbitMQ</td><td><code>ack</code></td><td><code>nack</code> + requeue</td><td><code>reject</code></td><td><code>reject({ requeue: true })</code> requeues instead of dropping.</td></tr>
-        <tr><td>Redis Streams</td><td><code>XACK</code></td><td><code>XADD</code> with <code>attempt + 1</code>, then <code>XACK</code></td><td>complete, or requeue</td><td>Retries append a new entry; the old one is never lost if the append fails.</td></tr>
+        <tr><td>Redis Streams</td><td><code>XACK</code></td><td><code>XADD</code> with <code>attempt + 1</code>, then <code>XACK</code></td><td>dead-letters (or requeues)</td><td>Retries append a new entry; the old one is never lost if the append fails. A reject without requeue is XADDed to the stream configured as <code>native.deadLetter</code> before being acknowledged. Works via node-redis or ioredis, against Redis and Valkey servers.</td></tr>
         <tr><td>Redis Pub/Sub</td><td>no-op</td><td>—</td><td>—</td><td>Ephemeral fan-out; no persistence.</td></tr>
         <tr><td>NATS Core</td><td>no-op</td><td>—</td><td>—</td><td>Messages are ephemeral. JetStream publishing available via the adapter.</td></tr>
         <tr><td>Amazon SQS</td><td>deletes the message</td><td>changes visibility timeout</td><td>—</td><td><code>retry({ delay })</code> sets when the message becomes visible again.</td></tr>
@@ -57,7 +57,7 @@
         <tr><td>BullMQ</td><td>job</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td></tr>
         <tr><td>Kafka</td><td>stream</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
         <tr><td>RabbitMQ</td><td>queue</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
-        <tr><td>Redis Streams</td><td>stream</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Redis Streams</td><td>stream</td><td>—</td><td>—</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
         <tr><td>Redis Pub/Sub</td><td>pubsub</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
         <tr><td>NATS Core</td><td>pubsub</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>queue groups</td><td>—</td></tr>
         <tr><td>Amazon SQS</td><td>queue</td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>FIFO</td></tr>

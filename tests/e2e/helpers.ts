@@ -7,6 +7,7 @@ import net from 'node:net';
  * without Docker still passes, it just runs the unit suites.
  */
 export const REDIS_URL = process.env.QUEUEKIT_E2E_REDIS_URL ?? 'redis://127.0.0.1:6390';
+export const VALKEY_URL = process.env.QUEUEKIT_E2E_VALKEY_URL ?? 'redis://127.0.0.1:6391';
 export const RABBITMQ_URL = process.env.QUEUEKIT_E2E_RABBITMQ_URL ?? 'amqp://guest:guest@127.0.0.1:5673';
 export const KAFKA_BROKER = process.env.QUEUEKIT_E2E_KAFKA_BROKER ?? '127.0.0.1:9092';
 export const NATS_URL = process.env.QUEUEKIT_E2E_NATS_URL ?? 'nats://127.0.0.1:4222';
