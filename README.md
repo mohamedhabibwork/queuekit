@@ -33,53 +33,78 @@ deno add npm:@mohamedhabibwork/queuekit
 deno add npm:kafkajs
 ```
 
+## Framework integration
+
+QueueKit is framework-agnostic: enqueue with `publish()`, consume with a plain async loop. Ready-made recipes:
+
+| Framework            | Recipe                     |
+| -------------------- | -------------------------- |
+| Express 4/5          | enqueue from routes        |
+| Fastify 4/5          | plugin with graceful close |
+| NestJS 10+           | injectable queue service   |
+| Hono 4               | route handler enqueue      |
+| Next.js (App Router) | server action + worker     |
+| Elysia (Bun)         | shared async instance      |
+
+See [framework integration](docs/frameworks.md) and [end-to-end examples](docs/examples.md) for copy-paste snippets.
+
 ## Usage
 
 ```ts
-import { createQueue } from '@mohamedhabibwork/queuekit';
+import { createQueue } from "@mohamedhabibwork/queuekit";
 
 const kafka = await createQueue({
-  type: 'kafka',
-  clientId: 'orders-api',
-  brokers: ['localhost:9092'],
+  type: "kafka",
+  clientId: "orders-api",
+  brokers: ["localhost:9092"],
 });
 
-await kafka.publish('orders.created', {
-  payload: { orderId: 'ord_123' },
-}, {
-  native: { partition: 2, headers: { source: 'api' } },
-});
+await kafka.publish(
+  "orders.created",
+  {
+    payload: { orderId: "ord_123" },
+  },
+  {
+    native: { partition: 2, headers: { source: "api" } },
+  },
+);
 ```
 
 Provider-native options are intentionally kept under `native`; BullMQ options cannot accidentally be passed to Kafka and vice versa.
 
 ```ts
-import { createQueueManager } from '@mohamedhabibwork/queuekit';
+import { createQueueManager } from "@mohamedhabibwork/queuekit";
 
 const queues = createQueueManager({
-  default: 'jobs',
+  default: "jobs",
   providers: {
-    jobs: { type: 'bullmq', connection: { host: 'localhost', port: 6379 } },
-    events: { type: 'kafka', clientId: 'api', brokers: ['localhost:9092'] },
+    jobs: { type: "bullmq", connection: { host: "localhost", port: 6379 } },
+    events: { type: "kafka", clientId: "api", brokers: ["localhost:9092"] },
   },
 });
 
-await (await queues.provider('jobs')).publish('emails', {
-  type: 'welcome',
-  payload: { userId: 'u_1' },
-}, { native: { attempts: 5, backoff: { type: 'exponential', delay: 1_000 } } });
+await (
+  await queues.provider("jobs")
+).publish(
+  "emails",
+  {
+    type: "welcome",
+    payload: { userId: "u_1" },
+  },
+  { native: { attempts: 5, backoff: { type: "exponential", delay: 1_000 } } },
+);
 ```
 
 ## Providers
 
-| Provider | Entrypoint | Family |
-| --- | --- | --- |
-| BullMQ | `@mohamedhabibwork/queuekit/bullmq` | Job queue |
-| Kafka | `@mohamedhabibwork/queuekit/kafka` | Event stream |
-| RabbitMQ | `@mohamedhabibwork/queuekit/rabbitmq` | Message queue |
-| Redis | `@mohamedhabibwork/queuekit/redis` | Pub/Sub or stream |
-| NATS | `@mohamedhabibwork/queuekit/nats` | Pub/Sub; JetStream publishing |
-| Amazon SQS | `@mohamedhabibwork/queuekit/sqs` | Message queue |
+| Provider   | Entrypoint                            | Family                        |
+| ---------- | ------------------------------------- | ----------------------------- |
+| BullMQ     | `@mohamedhabibwork/queuekit/bullmq`   | Job queue                     |
+| Kafka      | `@mohamedhabibwork/queuekit/kafka`    | Event stream                  |
+| RabbitMQ   | `@mohamedhabibwork/queuekit/rabbitmq` | Message queue                 |
+| Redis      | `@mohamedhabibwork/queuekit/redis`    | Pub/Sub or stream             |
+| NATS       | `@mohamedhabibwork/queuekit/nats`     | Pub/Sub; JetStream publishing |
+| Amazon SQS | `@mohamedhabibwork/queuekit/sqs`      | Message queue                 |
 
 See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics. BullMQ no longer bundles a Redis client: when `connection` is a URL string, also install `ioredis` (`npm install bullmq ioredis`). The Redis provider works with both `node-redis` (default) and `ioredis` (`client: 'ioredis'`), against Redis and Valkey servers, and Streams consumers can dead-letter rejected entries with `native.deadLetter`.
 
@@ -88,38 +113,39 @@ See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for c
 Tests can use the built-in memory fake driver, which supports store-and-forward delivery, delays, retries, acknowledgements, and dead letters with deterministic controls:
 
 ```ts
-import { createFakeQueue } from '@mohamedhabibwork/queuekit/testing';
+import { createFakeQueue } from "@mohamedhabibwork/queuekit/testing";
 
 const testQueue = createFakeQueue();
-await testQueue.publish('emails', { type: 'welcome', payload: { email: 'person@example.com' } });
+await testQueue.publish("emails", { type: "welcome", payload: { email: "person@example.com" } });
 
-await testQueue.waitUntilIdle();                    // await all in-flight handler work
-await testQueue.flush();                            // force delayed messages out immediately
-testQueue.pause(); testQueue.resume();              // hold and release delivery
-testQueue.pending('emails');                        // queued, unacknowledged messages
-testQueue.deadLetters('emails');                    // rejected / exhausted messages
-testQueue.failNext(new Error('broker down'));       // inject the next publish failure
+await testQueue.waitUntilIdle(); // await all in-flight handler work
+await testQueue.flush(); // force delayed messages out immediately
+testQueue.pause();
+testQueue.resume(); // hold and release delivery
+testQueue.pending("emails"); // queued, unacknowledged messages
+testQueue.deadLetters("emails"); // rejected / exhausted messages
+testQueue.failNext(new Error("broker down")); // inject the next publish failure
 ```
 
 The fake is also a first-class driver, so `createQueue` and `createQueueManager` can point at it with the same config shape used in production:
 
 ```ts
-import { createQueueManager } from '@mohamedhabibwork/queuekit';
+import { createQueueManager } from "@mohamedhabibwork/queuekit";
 
-const manager = createQueueManager({ providers: { jobs: { type: 'memory' } }, default: 'jobs' });
+const manager = createQueueManager({ providers: { jobs: { type: "memory" } }, default: "jobs" });
 ```
 
 Custom providers are declared with `defineQueueProvider`:
 
 ```ts
-import { defineQueueProvider } from '@mohamedhabibwork/queuekit/custom';
-import { createMemoryQueue } from '@mohamedhabibwork/queuekit/testing';
+import { defineQueueProvider } from "@mohamedhabibwork/queuekit/custom";
+import { createMemoryQueue } from "@mohamedhabibwork/queuekit/testing";
 
 const testQueue = createMemoryQueue();
 
 const provider = defineQueueProvider({
-  name: 'internal' as const,
-  capabilities: { kind: 'queue', publish: true, consume: false },
+  name: "internal" as const,
+  capabilities: { kind: "queue", publish: true, consume: false },
   async create(config: { endpoint: string }) {
     // Return a QueueProvider implemented entirely against public QueueKit types.
     return testQueue;
@@ -156,6 +182,30 @@ Broker endpoints can be overridden with the `QUEUEKIT_E2E_REDIS_URL`, `QUEUEKIT_
 
 Publishing runs only from the Release workflow. Add an npm automation token as the repository Actions secret `NPM_TOKEN`; a local `.env` file cannot be read by GitHub-hosted runners. Details are in the [publishing guide](https://mohamedhabibwork.github.io/queuekit/publishing.html).
 
+## Use with AI (llms.txt)
+
+This repo ships an `llms.txt` — a curated, LLM-readable map of the API, semantics, and docs, written so coding assistants get it right the first time.
+
+- **Cursor / Claude Code / Copilot**: open [`llms.txt`](https://github.com/mohamedhabibwork/queuekit/blob/main/llms.txt) or paste the raw text into your rules file (`CLAUDE.md`, `.cursorrules`, `AGENTS.md`).
+- **ChatGPT / Custom GPTs / Perplexity**: add the raw URL — https://raw.githubusercontent.com/mohamedhabibwork/queuekit/main/llms.txt
+- **Offline / agents in CI**: `llms.txt`, the README, and every guide in `docs/` ship inside the npm tarball, so agents can read them straight from `node_modules/@mohamedhabibwork/queuekit/`.
+- **Contributing to this repo**: [AGENTS.md](AGENTS.md) documents layout, commands, and conventions for coding agents.
+
 ## License
 
 [MIT](LICENSE)
+
+## Logging with loggerkit
+
+Managers accept an optional `logger` (any object with `debug/info/warn/error`), so a
+[`@mohamedhabibwork/loggerkit`](https://github.com/mohamedhabibwork/loggerkit) `Logger` plugs in
+directly with no extra dependency:
+
+```ts
+import { createLogger } from "@mohamedhabibwork/loggerkit";
+import { createQueueManager } from "@mohamedhabibwork/queuekit";
+
+const manager = createQueueManager({ ...config, logger: createLogger({ name: "queue" }) });
+```
+
+Provider creation and close events are logged at `debug`; creation failures at `error`.

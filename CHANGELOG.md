@@ -35,18 +35,20 @@ All notable releases, newest first. This file is updated automatically by the re
 ## v0.1.0 (2026-09-09)
 
 ## What's Changed
-* chore(deps): bump actions/checkout from 4 to 7 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/1
-* chore(deps): bump googleapis/release-please-action from 4 to 5 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/2
-* chore(deps): bump pnpm/action-setup from 4 to 6 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/4
-* chore(deps-dev): bump typescript from 5.9.3 to 7.0.2 in /packages/core by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/5
-* chore(deps): bump actions/setup-node from 4 to 7 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/3
-* chore(deps-dev): bump @types/node from 22.20.1 to 26.4.0 in /packages/core by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/6
-* chore(deps-dev): bump eslint from 9.39.5 to 10.9.1 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/11
-* chore(deps-dev): bump @types/node from 22.20.1 to 26.4.0 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/9
-* chore(deps-dev): bump typescript from 5.9.3 to 6.0.3 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/8
-* chore(deps-dev): bump typescript from 5.9.3 to 7.0.2 in /packages/memory by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/7
+
+- chore(deps): bump actions/checkout from 4 to 7 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/1
+- chore(deps): bump googleapis/release-please-action from 4 to 5 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/2
+- chore(deps): bump pnpm/action-setup from 4 to 6 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/4
+- chore(deps-dev): bump typescript from 5.9.3 to 7.0.2 in /packages/core by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/5
+- chore(deps): bump actions/setup-node from 4 to 7 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/3
+- chore(deps-dev): bump @types/node from 22.20.1 to 26.4.0 in /packages/core by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/6
+- chore(deps-dev): bump eslint from 9.39.5 to 10.9.1 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/11
+- chore(deps-dev): bump @types/node from 22.20.1 to 26.4.0 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/9
+- chore(deps-dev): bump typescript from 5.9.3 to 6.0.3 by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/8
+- chore(deps-dev): bump typescript from 5.9.3 to 7.0.2 in /packages/memory by @dependabot[bot] in https://github.com/mohamedhabibwork/queuekit/pull/7
 
 ## New Contributors
-* @dependabot[bot] made their first contribution in https://github.com/mohamedhabibwork/queuekit/pull/1
+
+- @dependabot[bot] made their first contribution in https://github.com/mohamedhabibwork/queuekit/pull/1
 
 **Full Changelog**: https://github.com/mohamedhabibwork/queuekit/commits/v0.1.0

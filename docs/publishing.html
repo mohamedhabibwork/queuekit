@@ -1,44 +1,72 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Publishing — QueueKit</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
-</head>
-<body>
-<div class="layout">
-  <aside class="sidebar">
-    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
-    <nav class="nav">
-      <div class="nav-label">Get started</div>
-      <a href="index.html">Overview</a>
-      <a href="examples.html">Examples</a>
-      <div class="nav-label">Reference</div>
-      <a href="providers.html">Provider semantics</a>
-      <a href="architecture.html">Architecture</a>
-      <a href="custom-providers.html">Custom providers</a>
-      <a href="publishing.html" aria-current="page">Publishing</a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
-      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
-    </div>
-  </aside>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Publishing — QueueKit</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css"
+    />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+        <nav class="nav">
+          <div class="nav-label">Get started</div>
+          <a href="index.html">Overview</a>
+          <a href="examples.html">Examples</a>
+          <div class="nav-label">Reference</div>
+          <a href="providers.html">Provider semantics</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="custom-providers.html">Custom providers</a>
+          <a href="publishing.html" aria-current="page">Publishing</a>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+          <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+        </div>
+      </aside>
 
-  <main class="content">
-    <h1>Publishing and secrets</h1>
-    <ol>
-      <li>Enable npm trusted publishing for this repository, or create an npm automation token with publish access to <code>@mohamedhabibwork/queuekit</code>.</li>
-      <li>In GitHub: <strong>Settings → Secrets and variables → Actions</strong>, add repository secret <code>NPM_TOKEN</code>.</li>
-      <li>Push a tag. Every tag automatically creates or updates its GitHub Release with GitHub-generated release notes, and appends a matching section (notes plus the commits since the previous tag) to <code>CHANGELOG.md</code> on <code>main</code> as <code>github-actions[bot]</code>. Publishing a GitHub Release also regenerates its notes, so the release always has a changelog.</li>
-      <li>Tags beginning with <code>v</code> (for example, <code>v0.1.0</code>) run the full quality gate and invoke <code>npm publish --provenance</code>; the tag must equal <code>package.json</code>'s version. Other tags receive release notes and a <code>CHANGELOG.md</code> entry but do not publish to npm.</li>
-    </ol>
-    <div class="note"><strong><code>.env</code> is intentionally ignored.</strong> A file on a developer machine is not available to GitHub-hosted runners, so it cannot securely populate Actions. For local publishing, copy <code>.env.example</code> to <code>.env</code>, export <code>NPM_TOKEN</code>, and run <code>npm publish</code>; CI uses <code>${{ secrets.NPM_TOKEN }}</code> instead.</div>
-  </main>
-</div>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-<script>window.hljs && hljs.highlightAll();</script>
-</body>
+      <main class="content">
+        <h1>Publishing and secrets</h1>
+        <ol>
+          <li>
+            Enable npm trusted publishing for this repository, or create an npm automation token
+            with publish access to <code>@mohamedhabibwork/queuekit</code>.
+          </li>
+          <li>
+            In GitHub: <strong>Settings → Secrets and variables → Actions</strong>, add repository
+            secret <code>NPM_TOKEN</code>.
+          </li>
+          <li>
+            Push a tag. Every tag automatically creates or updates its GitHub Release with
+            GitHub-generated release notes, and appends a matching section (notes plus the commits
+            since the previous tag) to <code>CHANGELOG.md</code> on <code>main</code> as
+            <code>github-actions[bot]</code>. Publishing a GitHub Release also regenerates its
+            notes, so the release always has a changelog.
+          </li>
+          <li>
+            Tags beginning with <code>v</code> (for example, <code>v0.1.0</code>) run the full
+            quality gate and invoke <code>npm publish --provenance</code>; the tag must equal
+            <code>package.json</code>'s version. Other tags receive release notes and a
+            <code>CHANGELOG.md</code> entry but do not publish to npm.
+          </li>
+        </ol>
+        <div class="note">
+          <strong><code>.env</code> is intentionally ignored.</strong> A file on a developer machine
+          is not available to GitHub-hosted runners, so it cannot securely populate Actions. For
+          local publishing, copy <code>.env.example</code> to <code>.env</code>, export
+          <code>NPM_TOKEN</code>, and run <code>npm publish</code>; CI uses
+          <code>${{ secrets.NPM_TOKEN }}</code> instead.
+        </div>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    <script>
+      window.hljs && hljs.highlightAll();
+    </script>
+  </body>
 </html>

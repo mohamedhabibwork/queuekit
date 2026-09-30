@@ -1,39 +1,52 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Custom providers — QueueKit</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
-</head>
-<body>
-<div class="layout">
-  <aside class="sidebar">
-    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
-    <nav class="nav">
-      <div class="nav-label">Get started</div>
-      <a href="index.html">Overview</a>
-      <a href="examples.html">Examples</a>
-      <div class="nav-label">Reference</div>
-      <a href="providers.html">Provider semantics</a>
-      <a href="architecture.html">Architecture</a>
-      <a href="custom-providers.html" aria-current="page">Custom providers</a>
-      <a href="publishing.html">Publishing</a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
-      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
-    </div>
-  </aside>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Custom providers — QueueKit</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css"
+    />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+        <nav class="nav">
+          <div class="nav-label">Get started</div>
+          <a href="index.html">Overview</a>
+          <a href="examples.html">Examples</a>
+          <div class="nav-label">Reference</div>
+          <a href="providers.html">Provider semantics</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="custom-providers.html" aria-current="page">Custom providers</a>
+          <a href="publishing.html">Publishing</a>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+          <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+        </div>
+      </aside>
 
-  <main class="content">
-    <h1>Custom providers</h1>
-    <p class="lead">Bring your own broker, cloud service, or test double behind the same <code>QueueProvider</code> contract.</p>
+      <main class="content">
+        <h1>Custom providers</h1>
+        <p class="lead">
+          Bring your own broker, cloud service, or test double behind the same
+          <code>QueueProvider</code> contract.
+        </p>
 
-    <p>Use <code>defineQueueProvider</code> from the public <code>custom</code> entrypoint. A custom provider implements the public <code>QueueProvider</code> contract, advertises accurate capabilities, and can preserve arbitrary native option and response types. It must not import QueueKit internals.</p>
+        <p>
+          Use <code>defineQueueProvider</code> from the public <code>custom</code> entrypoint. A
+          custom provider implements the public <code>QueueProvider</code> contract, advertises
+          accurate capabilities, and can preserve arbitrary native option and response types. It
+          must not import QueueKit internals.
+        </p>
 
-    <div class="code-block"><span class="code-lang">ts</span><pre><code class="language-ts">import { createQueueKit, defineQueueProvider } from '@mohamedhabibwork/queuekit/custom';
+        <div class="code-block">
+          <span class="code-lang">ts</span>
+          <pre><code class="language-ts">import { createQueueKit, defineQueueProvider } from '@mohamedhabibwork/queuekit/custom';
 import type { QueueProvider } from '@mohamedhabibwork/queuekit';
 
 // 1. Define the provider once, next to its SDK.
@@ -48,12 +61,19 @@ const httpWebhook = defineQueueProvider('http-webhook', {
 const kit = createQueueKit({ providers: { 'http-webhook': httpWebhook } });
 
 // 3. Create queues with the same config-shape ergonomics as the built-ins.
-const webhooks = await kit.create({ type: 'http-webhook', endpoint: 'https://example.com/hooks' });</code></pre></div>
+const webhooks = await kit.create({ type: 'http-webhook', endpoint: 'https://example.com/hooks' });</code></pre>
+        </div>
 
-    <p>The in-memory provider at <code>@mohamedhabibwork/queuekit/testing</code> is a full reference implementation and is useful for contract-oriented application tests — see <a href="examples.html#testing">the testing examples</a>.</p>
-  </main>
-</div>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-<script>window.hljs && hljs.highlightAll();</script>
-</body>
+        <p>
+          The in-memory provider at <code>@mohamedhabibwork/queuekit/testing</code> is a full
+          reference implementation and is useful for contract-oriented application tests — see
+          <a href="examples.html#testing">the testing examples</a>.
+        </p>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    <script>
+      window.hljs && hljs.highlightAll();
+    </script>
+  </body>
 </html>

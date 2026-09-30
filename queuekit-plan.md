@@ -140,12 +140,12 @@ It should not try to implement a broker itself.
 
 Recommended runtime matrix:
 
-| Runtime | Minimum | Support |
-|---|---:|---|
-| Node.js | `>=20` | First-class |
-| Bun | `>=1.1` | First-class |
-| Deno | `>=2.0` | First-class |
-| Browser | N/A | Not supported |
+| Runtime | Minimum | Support       |
+| ------- | ------: | ------------- |
+| Node.js |  `>=20` | First-class   |
+| Bun     | `>=1.1` | First-class   |
+| Deno    | `>=2.0` | First-class   |
+| Browser |     N/A | Not supported |
 
 Some provider SDKs may have runtime-specific limitations.
 
@@ -196,22 +196,22 @@ Example:
 
 ```ts
 const queue = await createQueue({
-  type: 'bullmq',
+  type: "bullmq",
 
   connection: {
-    host: 'localhost',
+    host: "localhost",
     port: 6379,
   },
 
-  queue: 'emails',
+  queue: "emails",
 });
 
 await queue.publish(
   {
-    type: 'welcome-email',
+    type: "welcome-email",
     payload: {
-      userId: '123',
-      email: 'user@example.com',
+      userId: "123",
+      email: "user@example.com",
     },
   },
   {
@@ -219,7 +219,7 @@ await queue.publish(
       delay: 5000,
       attempts: 5,
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 1000,
       },
     },
@@ -231,26 +231,24 @@ For Kafka:
 
 ```ts
 const kafka = await createQueue({
-  type: 'kafka',
+  type: "kafka",
 
-  brokers: [
-    'localhost:9092',
-  ],
+  brokers: ["localhost:9092"],
 
-  clientId: 'billing-service',
+  clientId: "billing-service",
 });
 
 await kafka.publish(
-  'payments.completed',
+  "payments.completed",
   {
-    paymentId: 'pay_123',
+    paymentId: "pay_123",
     amount: 100,
   },
   {
     native: {
       partition: 2,
       headers: {
-        traceId: 'abc',
+        traceId: "abc",
       },
     },
   },
@@ -523,47 +521,27 @@ queuekit/
 Recommended imports:
 
 ```ts
-import {
-  createQueue,
-  createQueueManager,
-} from '@mohamedhabibwork/queuekit';
+import { createQueue, createQueueManager } from "@mohamedhabibwork/queuekit";
 ```
 
 Provider-specific:
 
 ```ts
-import {
-  createKafka,
-  KafkaProvider,
-} from '@mohamedhabibwork/queuekit/kafka';
+import { createKafka, KafkaProvider } from "@mohamedhabibwork/queuekit/kafka";
 
-import {
-  createRabbitMQ,
-} from '@mohamedhabibwork/queuekit/rabbitmq';
+import { createRabbitMQ } from "@mohamedhabibwork/queuekit/rabbitmq";
 
-import {
-  createBullMQ,
-} from '@mohamedhabibwork/queuekit/bullmq';
+import { createBullMQ } from "@mohamedhabibwork/queuekit/bullmq";
 
-import {
-  createRedisQueue,
-} from '@mohamedhabibwork/queuekit/redis';
+import { createRedisQueue } from "@mohamedhabibwork/queuekit/redis";
 
-import {
-  createNats,
-} from '@mohamedhabibwork/queuekit/nats';
+import { createNats } from "@mohamedhabibwork/queuekit/nats";
 
-import {
-  createSqs,
-} from '@mohamedhabibwork/queuekit/sqs';
+import { createSqs } from "@mohamedhabibwork/queuekit/sqs";
 
-import {
-  defineQueueProvider,
-} from '@mohamedhabibwork/queuekit/custom';
+import { defineQueueProvider } from "@mohamedhabibwork/queuekit/custom";
 
-import {
-  createMemoryQueue,
-} from '@mohamedhabibwork/queuekit/testing';
+import { createMemoryQueue } from "@mohamedhabibwork/queuekit/testing";
 ```
 
 Recommended exports:
@@ -657,9 +635,7 @@ Provider-native details should not be added here.
 Use generics for native options.
 
 ```ts
-export interface PublishOptions<
-  TNative = unknown,
-> {
+export interface PublishOptions<TNative = unknown> {
   delay?: number;
 
   priority?: number;
@@ -691,10 +667,7 @@ The provider must expose capability information indicating whether they are supp
 # 12. Publish Result
 
 ```ts
-export interface PublishResult<
-  TProvider extends string = string,
-  TNative = unknown,
-> {
+export interface PublishResult<TProvider extends string = string, TNative = unknown> {
   ok: boolean;
 
   provider: TProvider;
@@ -718,10 +691,7 @@ Do not fake values that providers do not return.
 # 13. Consumer Message
 
 ```ts
-export interface ConsumedMessage<
-  TPayload,
-  TNativeMessage = unknown,
-> {
+export interface ConsumedMessage<TPayload, TNativeMessage = unknown> {
   id?: string;
 
   payload: TPayload;
@@ -739,15 +709,8 @@ export interface ConsumedMessage<
 Acknowledgement should be separate:
 
 ```ts
-export interface MessageContext<
-  TPayload,
-  TNativeMessage,
-  TAck,
-> {
-  message: ConsumedMessage<
-    TPayload,
-    TNativeMessage
-  >;
+export interface MessageContext<TPayload, TNativeMessage, TAck> {
+  message: ConsumedMessage<TPayload, TNativeMessage>;
 
   ack: TAck;
 
@@ -767,20 +730,16 @@ Base API:
 export interface QueueAcknowledgement {
   complete(): Promise<void>;
 
-  retry?(
-    options?: RetryOptions,
-  ): Promise<void>;
+  retry?(options?: RetryOptions): Promise<void>;
 
-  reject?(
-    options?: RejectOptions,
-  ): Promise<void>;
+  reject?(options?: RejectOptions): Promise<void>;
 }
 ```
 
 Provider-specific acknowledgement is also exposed:
 
 ```ts
-ack.native
+ack.native;
 ```
 
 For example:
@@ -810,12 +769,7 @@ The normalized API should map only valid concepts.
 
 ```ts
 export interface QueueCapabilities {
-  kind:
-    | 'job'
-    | 'queue'
-    | 'pubsub'
-    | 'stream'
-    | 'hybrid';
+  kind: "job" | "queue" | "pubsub" | "stream" | "hybrid";
 
   publish: boolean;
 
@@ -884,21 +838,12 @@ export interface QueueProvider<
     destination: string,
     message: QueueMessage<TPayload>,
     options?: PublishOptions<TPublishNative>,
-  ): Promise<
-    PublishResult<
-      TName,
-      TPublishResponse
-    >
-  >;
+  ): Promise<PublishResult<TName, TPublishResponse>>;
 
   consume?<TPayload>(
     destination: string,
     handler: (
-      context: MessageContext<
-        TPayload,
-        TConsumeNative,
-        TAcknowledgement
-      >,
+      context: MessageContext<TPayload, TConsumeNative, TAcknowledgement>,
     ) => Promise<void> | void,
     options?: ConsumerOptions,
   ): Promise<QueueConsumer>;
@@ -930,9 +875,7 @@ export type BuiltInQueueConfig =
 Factory:
 
 ```ts
-export async function createQueue<
-  const TConfig extends BuiltInQueueConfig,
->(
+export async function createQueue<const TConfig extends BuiltInQueueConfig>(
   config: TConfig,
 ): Promise<QueueForConfig<TConfig>>;
 ```
@@ -941,13 +884,11 @@ Example:
 
 ```ts
 const kafka = await createQueue({
-  type: 'kafka',
+  type: "kafka",
 
-  brokers: [
-    'localhost:9092',
-  ],
+  brokers: ["localhost:9092"],
 
-  clientId: 'billing',
+  clientId: "billing",
 });
 ```
 
@@ -961,21 +902,21 @@ Allow applications to define messages once.
 
 ```ts
 interface AppQueues {
-  'emails.send': {
+  "emails.send": {
     payload: {
       userId: string;
       template: string;
     };
   };
 
-  'payments.capture': {
+  "payments.capture": {
     payload: {
       paymentId: string;
       amount: number;
     };
   };
 
-  'image.resize': {
+  "image.resize": {
     payload: {
       imageId: string;
       width: number;
@@ -994,13 +935,10 @@ const queues = createTypedQueue<AppQueues>(provider);
 Publish:
 
 ```ts
-await queues.publish(
-  'payments.capture',
-  {
-    paymentId: 'pay_123',
-    amount: 250,
-  },
-);
+await queues.publish("payments.capture", {
+  paymentId: "pay_123",
+  amount: 250,
+});
 ```
 
 Invalid payloads fail at compile time.
@@ -1013,12 +951,12 @@ For stream/pubsub systems:
 
 ```ts
 interface AppEvents {
-  'user.created': {
+  "user.created": {
     userId: string;
     email: string;
   };
 
-  'order.completed': {
+  "order.completed": {
     orderId: string;
     total: number;
   };
@@ -1028,24 +966,18 @@ interface AppEvents {
 Then:
 
 ```ts
-events.publish(
-  'user.created',
-  {
-    userId: 'u1',
-    email: 'user@example.com',
-  },
-);
+events.publish("user.created", {
+  userId: "u1",
+  email: "user@example.com",
+});
 ```
 
 Consumer:
 
 ```ts
-events.subscribe(
-  'user.created',
-  async ({ message }) => {
-    console.log(message.payload.userId);
-  },
-);
+events.subscribe("user.created", async ({ message }) => {
+  console.log(message.payload.userId);
+});
 ```
 
 ---
@@ -1089,7 +1021,7 @@ Config:
 
 ```ts
 export interface KafkaConfig {
-  type: 'kafka';
+  type: "kafka";
 
   clientId: string;
 
@@ -1111,10 +1043,10 @@ Publish:
 
 ```ts
 await kafka.publish(
-  'orders.completed',
+  "orders.completed",
   {
     payload: {
-      orderId: 'ORD-1',
+      orderId: "ORD-1",
     },
   },
   {
@@ -1122,7 +1054,7 @@ await kafka.publish(
       partition: 1,
 
       headers: {
-        traceId: 'abc',
+        traceId: "abc",
       },
     },
   },
@@ -1133,12 +1065,9 @@ Consume:
 
 ```ts
 await kafka.consume(
-  'orders.completed',
+  "orders.completed",
 
-  async ({
-    message,
-    ack,
-  }) => {
+  async ({ message, ack }) => {
     console.log(message.payload);
 
     await ack.complete();
@@ -1146,7 +1075,7 @@ await kafka.consume(
 
   {
     native: {
-      groupId: 'billing-service',
+      groupId: "billing-service",
       fromBeginning: false,
     },
   },
@@ -1199,7 +1128,7 @@ Config:
 
 ```ts
 export interface RabbitMqConfig {
-  type: 'rabbitmq';
+  type: "rabbitmq";
 
   url:
     | string
@@ -1221,16 +1150,16 @@ Queue publish:
 
 ```ts
 await rabbit.publish(
-  'emails',
+  "emails",
   {
     payload: {
-      userId: '123',
+      userId: "123",
     },
   },
   {
     native: {
       persistent: true,
-      expiration: '60000',
+      expiration: "60000",
     },
   },
 );
@@ -1239,11 +1168,11 @@ await rabbit.publish(
 Exchange API:
 
 ```ts
-await rabbit.exchange('events').publish(
-  'order.completed',
+await rabbit.exchange("events").publish(
+  "order.completed",
 
   {
-    orderId: 'ORD-1',
+    orderId: "ORD-1",
   },
 );
 ```
@@ -1252,12 +1181,9 @@ Consumer:
 
 ```ts
 await rabbit.consume(
-  'emails',
+  "emails",
 
-  async ({
-    message,
-    ack,
-  }) => {
+  async ({ message, ack }) => {
     try {
       await sendEmail(message.payload);
 
@@ -1309,7 +1235,7 @@ Config:
 
 ```ts
 export interface BullMqConfig {
-  type: 'bullmq';
+  type: "bullmq";
 
   connection:
     | string
@@ -1331,12 +1257,12 @@ Create queue:
 
 ```ts
 const emails = await createQueue({
-  type: 'bullmq',
+  type: "bullmq",
 
-  queue: 'emails',
+  queue: "emails",
 
   connection: {
-    host: 'localhost',
+    host: "localhost",
     port: 6379,
   },
 });
@@ -1346,12 +1272,12 @@ Publish:
 
 ```ts
 await emails.publish(
-  'emails',
+  "emails",
   {
-    type: 'welcome',
+    type: "welcome",
 
     payload: {
-      userId: '123',
+      userId: "123",
     },
   },
   {
@@ -1359,7 +1285,7 @@ await emails.publish(
       attempts: 5,
 
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 1000,
       },
 
@@ -1375,14 +1301,10 @@ Worker:
 
 ```ts
 await emails.consume(
-  'emails',
+  "emails",
 
-  async ({
-    message,
-  }) => {
-    await sendWelcomeEmail(
-      message.payload.userId,
-    );
+  async ({ message }) => {
+    await sendWelcomeEmail(message.payload.userId);
   },
 
   {
@@ -1401,9 +1323,9 @@ await emails.consume(
 Expose native BullMQ components:
 
 ```ts
-bull.native().queue
-bull.native().worker
-bull.native().queueEvents
+bull.native().queue;
+bull.native().worker;
+bull.native().queueEvents;
 ```
 
 where applicable.
@@ -1431,10 +1353,7 @@ redis-list
 Config:
 
 ```ts
-type RedisConfig =
-  | RedisPubSubConfig
-  | RedisStreamsConfig
-  | RedisListQueueConfig;
+type RedisConfig = RedisPubSubConfig | RedisStreamsConfig | RedisListQueueConfig;
 ```
 
 ---
@@ -1443,11 +1362,11 @@ type RedisConfig =
 
 ```ts
 const pubsub = await createQueue({
-  type: 'redis',
+  type: "redis",
 
-  mode: 'pubsub',
+  mode: "pubsub",
 
-  url: 'redis://localhost:6379',
+  url: "redis://localhost:6379",
 });
 ```
 
@@ -1466,11 +1385,11 @@ broadcast semantics
 
 ```ts
 const stream = await createQueue({
-  type: 'redis',
+  type: "redis",
 
-  mode: 'streams',
+  mode: "streams",
 
-  url: 'redis://localhost:6379',
+  url: "redis://localhost:6379",
 });
 ```
 
@@ -1532,11 +1451,9 @@ Config:
 
 ```ts
 export interface NatsConfig {
-  type: 'nats';
+  type: "nats";
 
-  servers:
-    | string
-    | readonly string[];
+  servers: string | readonly string[];
 
   name?: string;
 
@@ -1546,9 +1463,7 @@ export interface NatsConfig {
 
   pass?: string;
 
-  mode?:
-    | 'core'
-    | 'jetstream';
+  mode?: "core" | "jetstream";
 
   native?: NatsNativeOptions;
 }
@@ -1584,7 +1499,7 @@ Config:
 
 ```ts
 export interface SqsConfig {
-  type: 'sqs';
+  type: "sqs";
 
   region: string;
 
@@ -1608,7 +1523,7 @@ await sqs.publish(
   },
   {
     native: {
-      messageGroupId: 'orders',
+      messageGroupId: "orders",
       messageDeduplicationId: order.id,
     },
   },
@@ -1675,9 +1590,7 @@ Custom providers are a first-class design requirement.
 Example:
 
 ```ts
-import {
-  defineQueueProvider,
-} from '@mohamedhabibwork/queuekit/custom';
+import { defineQueueProvider } from "@mohamedhabibwork/queuekit/custom";
 
 interface MyQueueConfig {
   endpoint: string;
@@ -1685,100 +1598,88 @@ interface MyQueueConfig {
 }
 
 interface MyPublishOptions {
-  priority?: 'low' | 'normal' | 'high';
+  priority?: "low" | "normal" | "high";
 }
 
 interface MyResponse {
   id: string;
 }
 
-export const myQueueProvider =
-  defineQueueProvider({
-    name: 'my-queue',
+export const myQueueProvider = defineQueueProvider({
+  name: "my-queue",
 
-    capabilities: {
-      kind: 'queue',
+  capabilities: {
+    kind: "queue",
 
-      publish: true,
-      consume: true,
+    publish: true,
+    consume: true,
 
-      delayed: false,
-      retries: true,
-      ack: true,
-    },
+    delayed: false,
+    retries: true,
+    ack: true,
+  },
 
-    async create(
-      config: MyQueueConfig,
-    ) {
-      return {
-        name: 'my-queue',
+  async create(config: MyQueueConfig) {
+    return {
+      name: "my-queue",
 
-        capabilities: {
-          kind: 'queue',
-          publish: true,
-          consume: true,
-          retries: true,
-          ack: true,
+      capabilities: {
+        kind: "queue",
+        publish: true,
+        consume: true,
+        retries: true,
+        ack: true,
+      },
+
+      async publish(
+        destination,
+        message,
+        options?: {
+          native?: MyPublishOptions;
         },
+      ) {
+        const response = await fetch(`${config.endpoint}/queues/${destination}`, {
+          method: "POST",
 
-        async publish(
-          destination,
-          message,
-          options?: {
-            native?: MyPublishOptions;
+          headers: {
+            authorization: `Bearer ${config.apiKey}`,
+
+            "content-type": "application/json",
           },
-        ) {
-          const response = await fetch(
-            `${config.endpoint}/queues/${destination}`,
-            {
-              method: 'POST',
 
-              headers: {
-                authorization:
-                  `Bearer ${config.apiKey}`,
+          body: JSON.stringify({
+            message,
+            ...options?.native,
+          }),
+        });
 
-                'content-type':
-                  'application/json',
-              },
+        const native: MyResponse = await response.json();
 
-              body: JSON.stringify({
-                message,
-                ...options?.native,
-              }),
-            },
-          );
+        return {
+          ok: response.ok,
 
-          const native: MyResponse =
-            await response.json();
+          provider: "my-queue",
 
-          return {
-            ok: response.ok,
+          messageId: native.id,
 
-            provider: 'my-queue',
+          native,
+        };
+      },
 
-            messageId: native.id,
-
-            native,
-          };
-        },
-
-        async close() {},
-      };
-    },
-  });
+      async close() {},
+    };
+  },
+});
 ```
 
 Usage:
 
 ```ts
-const provider =
-  await myQueueProvider.create({
-    endpoint:
-      'https://queue.example.com',
+const provider = await myQueueProvider.create({
+  endpoint: "https://queue.example.com",
 
-    apiKey:
-      process.env.QUEUE_API_KEY!,
-  });
+  apiKey: process.env.QUEUE_API_KEY!,
+});
 ```
 
 Custom providers should be able to support:
@@ -1813,14 +1714,13 @@ const queuekit = createQueueKit({
 Then:
 
 ```ts
-const queue =
-  await queuekit.create({
-    type: 'custommq',
+const queue = await queuekit.create({
+  type: "custommq",
 
-    endpoint: '...',
+  endpoint: "...",
 
-    apiKey: '...',
-  });
+  apiKey: "...",
+});
 ```
 
 Type inference should remain intact.
@@ -1832,56 +1732,50 @@ Type inference should remain intact.
 Provide a manager similar to StorageKit.
 
 ```ts
-const queues =
-  createQueueManager({
-    default: 'jobs',
+const queues = createQueueManager({
+  default: "jobs",
 
-    providers: {
-      jobs: {
-        type: 'bullmq',
+  providers: {
+    jobs: {
+      type: "bullmq",
 
-        connection: {
-          host: 'localhost',
-          port: 6379,
-        },
-      },
-
-      events: {
-        type: 'kafka',
-
-        brokers: [
-          'kafka-1:9092',
-          'kafka-2:9092',
-        ],
-
-        clientId: 'api',
-      },
-
-      rabbit: {
-        type: 'rabbitmq',
-
-        url:
-          'amqp://localhost',
-      },
-
-      cacheEvents: {
-        type: 'redis',
-
-        mode: 'streams',
-
-        url:
-          'redis://localhost:6379',
+      connection: {
+        host: "localhost",
+        port: 6379,
       },
     },
-  });
+
+    events: {
+      type: "kafka",
+
+      brokers: ["kafka-1:9092", "kafka-2:9092"],
+
+      clientId: "api",
+    },
+
+    rabbit: {
+      type: "rabbitmq",
+
+      url: "amqp://localhost",
+    },
+
+    cacheEvents: {
+      type: "redis",
+
+      mode: "streams",
+
+      url: "redis://localhost:6379",
+    },
+  },
+});
 ```
 
 Usage:
 
 ```ts
-queues.provider('jobs');
-queues.provider('events');
-queues.provider('rabbit');
+queues.provider("jobs");
+queues.provider("events");
+queues.provider("rabbit");
 ```
 
 Types must resolve correctly:
@@ -1899,32 +1793,31 @@ rabbit -> RabbitMqProvider
 Must support:
 
 ```ts
-const manager =
-  createQueueManager({
-    providers: {
-      primaryKafka: {
-        type: 'kafka',
-        brokers: ['kafka-a:9092'],
-        clientId: 'primary',
-      },
-
-      auditKafka: {
-        type: 'kafka',
-        brokers: ['kafka-b:9092'],
-        clientId: 'audit',
-      },
-
-      jobsRedis: {
-        type: 'bullmq',
-        connection: jobsRedis,
-      },
-
-      notificationsRedis: {
-        type: 'bullmq',
-        connection: notificationsRedis,
-      },
+const manager = createQueueManager({
+  providers: {
+    primaryKafka: {
+      type: "kafka",
+      brokers: ["kafka-a:9092"],
+      clientId: "primary",
     },
-  });
+
+    auditKafka: {
+      type: "kafka",
+      brokers: ["kafka-b:9092"],
+      clientId: "audit",
+    },
+
+    jobsRedis: {
+      type: "bullmq",
+      connection: jobsRedis,
+    },
+
+    notificationsRedis: {
+      type: "bullmq",
+      connection: notificationsRedis,
+    },
+  },
+});
 ```
 
 Aliases are independent from provider type.
@@ -1949,10 +1842,7 @@ better serverless behavior
 Example:
 
 ```ts
-const kafka =
-  await manager.provider(
-    'primaryKafka',
-  );
+const kafka = await manager.provider("primaryKafka");
 ```
 
 Optional warmup:
@@ -1968,19 +1858,18 @@ await manager.warmup();
 Generic producer:
 
 ```ts
-const producer =
-  queue.producer();
+const producer = queue.producer();
 ```
 
 Publish:
 
 ```ts
 await producer.publish(
-  'orders',
+  "orders",
 
   {
     payload: {
-      orderId: '123',
+      orderId: "123",
     },
   },
 );
@@ -1990,18 +1879,18 @@ Batch:
 
 ```ts
 await producer.publishMany(
-  'orders',
+  "orders",
 
   [
     {
       payload: {
-        orderId: '1',
+        orderId: "1",
       },
     },
 
     {
       payload: {
-        orderId: '2',
+        orderId: "2",
       },
     },
   ],
@@ -2015,22 +1904,15 @@ Use provider-native batch APIs when possible.
 # 34. Consumer API
 
 ```ts
-const consumer =
-  await queue.consume(
-    'orders',
+const consumer = await queue.consume(
+  "orders",
 
-    async ({
-      message,
-      ack,
-      signal,
-    }) => {
-      await processOrder(
-        message.payload,
-      );
+  async ({ message, ack, signal }) => {
+    await processOrder(message.payload);
 
-      await ack.complete();
-    },
-  );
+    await ack.complete();
+  },
+);
 ```
 
 Return handle:
@@ -2043,12 +1925,7 @@ interface QueueConsumer {
 
   close(): Promise<void>;
 
-  readonly status:
-    | 'starting'
-    | 'running'
-    | 'paused'
-    | 'closing'
-    | 'closed';
+  readonly status: "starting" | "running" | "paused" | "closing" | "closed";
 }
 ```
 
@@ -2060,12 +1937,10 @@ Optional convenience:
 
 ```ts
 await queue.consume(
-  'orders',
+  "orders",
 
   async ({ message }) => {
-    await processOrder(
-      message.payload,
-    );
+    await processOrder(message.payload);
   },
 
   {
@@ -2095,11 +1970,11 @@ export interface RetryPolicy {
 
   backoff?:
     | {
-        type: 'fixed';
+        type: "fixed";
         delay: number;
       }
     | {
-        type: 'exponential';
+        type: "exponential";
         delay: number;
         maxDelay?: number;
       };
@@ -2110,7 +1985,7 @@ Usage:
 
 ```ts
 await queue.publish(
-  'emails',
+  "emails",
 
   message,
 
@@ -2119,7 +1994,7 @@ await queue.publish(
       attempts: 5,
 
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 1000,
       },
     },
@@ -2239,13 +2114,9 @@ API:
 
 ```ts
 interface QueueCodec<T> {
-  encode(value: T):
-    Uint8Array | string;
+  encode(value: T): Uint8Array | string;
 
-  decode(
-    data:
-      Uint8Array | string,
-  ): T;
+  decode(data: Uint8Array | string): T;
 }
 ```
 
@@ -2269,15 +2140,14 @@ Avro
 Custom codec:
 
 ```ts
-const queue =
-  createQueue({
-    ...config,
+const queue = createQueue({
+  ...config,
 
-    codec: {
-      encode,
-      decode,
-    },
-  });
+  codec: {
+    encode,
+    decode,
+  },
+});
 ```
 
 ---
@@ -2289,13 +2159,11 @@ QueueKit should not require a heavy schema library.
 Optional typed validation:
 
 ```ts
-const queues =
-  createTypedQueue({
-    schemas: {
-      'user.created':
-        userCreatedSchema,
-    },
-  });
+const queues = createTypedQueue({
+  schemas: {
+    "user.created": userCreatedSchema,
+  },
+});
 ```
 
 Potential adapters:
@@ -2333,36 +2201,25 @@ Keep this out of the core MVP.
 Middleware API:
 
 ```ts
-queue.use(
-  async (
-    context,
-    next,
-  ) => {
-    const started =
-      performance.now();
+queue.use(async (context, next) => {
+  const started = performance.now();
 
-    try {
-      const result =
-        await next();
+  try {
+    const result = await next();
 
-      console.log({
-        provider:
-          context.provider,
+    console.log({
+      provider: context.provider,
 
-        operation:
-          context.operation,
+      operation: context.operation,
 
-        duration:
-          performance.now()
-          - started,
-      });
+      duration: performance.now() - started,
+    });
 
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  },
-);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+});
 ```
 
 Possible middleware:
@@ -2391,13 +2248,7 @@ interface QueueOperationContext {
 
   providerAlias?: string;
 
-  operation:
-    | 'publish'
-    | 'publishMany'
-    | 'consume'
-    | 'ack'
-    | 'retry'
-    | 'reject';
+  operation: "publish" | "publishMany" | "consume" | "ack" | "retry" | "reject";
 
   destination: string;
 
@@ -2405,8 +2256,7 @@ interface QueueOperationContext {
 
   correlationId?: string;
 
-  metadata?:
-    Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 ```
 
@@ -2417,7 +2267,7 @@ interface QueueOperationContext {
 Keep application metadata separate.
 
 ```ts
-message.metadata
+message.metadata;
 ```
 
 should not automatically be sent to provider.
@@ -2425,7 +2275,7 @@ should not automatically be sent to provider.
 Provider-delivered headers:
 
 ```ts
-message.headers
+message.headers;
 ```
 
 This distinction prevents internal telemetry metadata from leaking into messages.
@@ -2560,19 +2410,11 @@ Do not fake transactions on providers without them.
 # 51. Kafka Transaction Example
 
 ```ts
-await kafka.transaction(
-  async (tx) => {
-    await tx.publish(
-      'payments.completed',
-      payment,
-    );
+await kafka.transaction(async (tx) => {
+  await tx.publish("payments.completed", payment);
 
-    await tx.publish(
-      'audit.events',
-      auditEvent,
-    );
-  },
-);
+  await tx.publish("audit.events", auditEvent);
+});
 ```
 
 Native transaction object should remain accessible.
@@ -2591,18 +2433,17 @@ RabbitMQ
 Optional interface:
 
 ```ts
-const response =
-  await queue.request(
-    'users.lookup',
+const response = await queue.request(
+  "users.lookup",
 
-    {
-      userId: '123',
-    },
+  {
+    userId: "123",
+  },
 
-    {
-      timeout: 5000,
-    },
-  );
+  {
+    timeout: 5000,
+  },
+);
 ```
 
 Do not expose this as mandatory provider behavior.
@@ -2620,10 +2461,7 @@ requestReply?: boolean;
 For Kafka, Redis Streams, JetStream, Pulsar:
 
 ```ts
-const stream =
-  queue.stream(
-    'events',
-  );
+const stream = queue.stream("events");
 ```
 
 API:
@@ -2681,16 +2519,13 @@ RabbitMQ exchange
 # 55. Job Queue API
 
 ```ts
-const jobs =
-  queue.jobs(
-    'images',
-  );
+const jobs = queue.jobs("images");
 
 await jobs.add(
-  'resize',
+  "resize",
 
   {
-    imageId: 'img_1',
+    imageId: "img_1",
   },
 
   {
@@ -2729,12 +2564,12 @@ Every provider should expose its underlying SDK/client.
 Examples:
 
 ```ts
-kafka.native()
-rabbit.native()
-bull.native()
-redis.native()
-nats.native()
-sqs.native()
+kafka.native();
+rabbit.native();
+bull.native();
+redis.native();
+nats.native();
+sqs.native();
 ```
 
 Possible results:
@@ -2870,19 +2705,15 @@ Provider implementations may use them where upstream protocols require Node comp
 Producer:
 
 ```ts
-await queue.publish(
-  destination,
-  message,
-  {
-    signal,
-  },
-);
+await queue.publish(destination, message, {
+  signal,
+});
 ```
 
 Consumers receive:
 
 ```ts
-context.signal
+context.signal;
 ```
 
 Graceful shutdown should abort in-flight consumers where appropriate.
@@ -2915,10 +2746,7 @@ These remain distinct concepts.
 # 62. Batch Publishing
 
 ```ts
-await queue.publishMany(
-  'events',
-  messages,
-);
+await queue.publishMany("events", messages);
 ```
 
 Drivers should use native batch APIs:
@@ -2968,9 +2796,7 @@ Do not emulate batch consumption by buffering unless explicitly configured.
 Generic consumer option:
 
 ```ts
-interface ConsumerOptions<
-  TNative = unknown,
-> {
+interface ConsumerOptions<TNative = unknown> {
   concurrency?: number;
 
   autoAck?: boolean;
@@ -3047,44 +2873,31 @@ await manager.close({
 # 67. Error Model
 
 ```ts
-export class QueueError
-  extends Error {}
+export class QueueError extends Error {}
 
-export class QueueConfigError
-  extends QueueError {}
+export class QueueConfigError extends QueueError {}
 
-export class QueueConnectionError
-  extends QueueError {}
+export class QueueConnectionError extends QueueError {}
 
-export class QueueAuthenticationError
-  extends QueueError {}
+export class QueueAuthenticationError extends QueueError {}
 
-export class QueueAuthorizationError
-  extends QueueError {}
+export class QueueAuthorizationError extends QueueError {}
 
-export class QueuePublishError
-  extends QueueError {}
+export class QueuePublishError extends QueueError {}
 
-export class QueueConsumeError
-  extends QueueError {}
+export class QueueConsumeError extends QueueError {}
 
-export class QueueTimeoutError
-  extends QueueError {}
+export class QueueTimeoutError extends QueueError {}
 
-export class QueueRateLimitError
-  extends QueueError {}
+export class QueueRateLimitError extends QueueError {}
 
-export class QueueSerializationError
-  extends QueueError {}
+export class QueueSerializationError extends QueueError {}
 
-export class QueueDeserializationError
-  extends QueueError {}
+export class QueueDeserializationError extends QueueError {}
 
-export class QueueUnsupportedFeatureError
-  extends QueueError {}
+export class QueueUnsupportedFeatureError extends QueueError {}
 
-export class QueueClosedError
-  extends QueueError {}
+export class QueueClosedError extends QueueError {}
 ```
 
 ---
@@ -3156,8 +2969,7 @@ permission denied
 Optional:
 
 ```ts
-const health =
-  await queue.health();
+const health = await queue.health();
 ```
 
 Result:
@@ -3256,19 +3068,18 @@ Keep encryption outside core transport semantics.
 Provide in-memory test implementation.
 
 ```ts
-const queue =
-  createMemoryQueue();
+const queue = createMemoryQueue();
 ```
 
 Publish:
 
 ```ts
 await queue.publish(
-  'emails',
+  "emails",
 
   {
     payload: {
-      userId: '123',
+      userId: "123",
     },
   },
 );
@@ -3277,8 +3088,8 @@ await queue.publish(
 Inspect:
 
 ```ts
-queue.messages('emails');
-queue.lastMessage('emails');
+queue.messages("emails");
+queue.lastMessage("emails");
 queue.clear();
 ```
 
@@ -3339,22 +3150,17 @@ Critical tests:
 Kafka:
 
 ```ts
-const kafka =
-  await createQueue({
-    type: 'kafka',
-    clientId: 'app',
-    brokers: ['localhost:9092'],
-  });
+const kafka = await createQueue({
+  type: "kafka",
+  clientId: "app",
+  brokers: ["localhost:9092"],
+});
 
-await kafka.publish(
-  'events',
-  message,
-  {
-    native: {
-      partition: 1,
-    },
+await kafka.publish("events", message, {
+  native: {
+    partition: 1,
   },
-);
+});
 ```
 
 should compile.
@@ -3362,15 +3168,11 @@ should compile.
 This should fail:
 
 ```ts
-await kafka.publish(
-  'events',
-  message,
-  {
-    native: {
-      attempts: 5,
-    },
+await kafka.publish("events", message, {
+  native: {
+    attempts: 5,
   },
-);
+});
 ```
 
 because `attempts` is a BullMQ-style option.
@@ -3497,11 +3299,7 @@ Keep build tooling replaceable.
   "engines": {
     "node": ">=20"
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ]
+  "files": ["dist", "README.md", "LICENSE"]
 }
 ```
 
@@ -3512,31 +3310,28 @@ Deno and Bun support should be documented/tested instead of using npm `engines`.
 # 83. Example — BullMQ
 
 ```ts
-import {
-  createQueue,
-} from '@mohamedhabibwork/queuekit';
+import { createQueue } from "@mohamedhabibwork/queuekit";
 
-const queue =
-  await createQueue({
-    type: 'bullmq',
+const queue = await createQueue({
+  type: "bullmq",
 
-    queue: 'emails',
+  queue: "emails",
 
-    connection: {
-      host: 'localhost',
-      port: 6379,
-    },
-  });
+  connection: {
+    host: "localhost",
+    port: 6379,
+  },
+});
 
 await queue.publish(
-  'emails',
+  "emails",
 
   {
-    type: 'welcome',
+    type: "welcome",
 
     payload: {
-      userId: '123',
-      email: 'user@example.com',
+      userId: "123",
+      email: "user@example.com",
     },
   },
 
@@ -3545,7 +3340,7 @@ await queue.publish(
       attempts: 5,
 
       backoff: {
-        type: 'exponential',
+        type: "exponential",
         delay: 1000,
       },
 
@@ -3560,33 +3355,25 @@ await queue.publish(
 # 84. Example — Kafka
 
 ```ts
-const kafka =
-  await createQueue({
-    type: 'kafka',
+const kafka = await createQueue({
+  type: "kafka",
 
-    clientId:
-      'orders-service',
+  clientId: "orders-service",
 
-    brokers: [
-      'kafka-1:9092',
-      'kafka-2:9092',
-    ],
-  });
+  brokers: ["kafka-1:9092", "kafka-2:9092"],
+});
 
 await kafka.publish(
-  'orders.completed',
+  "orders.completed",
 
   {
     payload: {
-      orderId:
-        'ORD-1001',
+      orderId: "ORD-1001",
 
-      total:
-        750,
+      total: 750,
     },
 
-    correlationId:
-      'request-123',
+    correlationId: "request-123",
   },
 
   {
@@ -3594,8 +3381,7 @@ await kafka.publish(
       partition: 3,
 
       headers: {
-        source:
-          'orders-api',
+        source: "orders-api",
       },
     },
   },
@@ -3607,24 +3393,20 @@ await kafka.publish(
 # 85. Example — RabbitMQ
 
 ```ts
-const rabbit =
-  await createQueue({
-    type: 'rabbitmq',
+const rabbit = await createQueue({
+  type: "rabbitmq",
 
-    url:
-      'amqp://localhost',
-  });
+  url: "amqp://localhost",
+});
 
 await rabbit.publish(
-  'emails',
+  "emails",
 
   {
     payload: {
-      email:
-        'user@example.com',
+      email: "user@example.com",
 
-      template:
-        'welcome',
+      template: "welcome",
     },
   },
 
@@ -3643,29 +3425,24 @@ await rabbit.publish(
 # 86. Example — Redis Streams
 
 ```ts
-const redis =
-  await createQueue({
-    type: 'redis',
+const redis = await createQueue({
+  type: "redis",
 
-    mode: 'streams',
+  mode: "streams",
 
-    url:
-      'redis://localhost:6379',
+  url: "redis://localhost:6379",
 
-    group:
-      'billing',
+  group: "billing",
 
-    consumer:
-      'worker-1',
-  });
+  consumer: "worker-1",
+});
 
 await redis.publish(
-  'payments',
+  "payments",
 
   {
     payload: {
-      paymentId:
-        'pay_1',
+      paymentId: "pay_1",
     },
   },
 );
@@ -3676,28 +3453,24 @@ await redis.publish(
 # 87. Example — SQS
 
 ```ts
-const sqs =
-  await createQueue({
-    type: 'sqs',
+const sqs = await createQueue({
+  type: "sqs",
 
-    region:
-      'eu-central-1',
-  });
+  region: "eu-central-1",
+});
 
 await sqs.publish(
   queueUrl,
 
   {
     payload: {
-      taskId:
-        'task-100',
+      taskId: "task-100",
     },
   },
 
   {
     native: {
-      delaySeconds:
-        30,
+      delaySeconds: 30,
     },
   },
 );
@@ -3708,78 +3481,51 @@ await sqs.publish(
 # 88. Example — Custom Provider
 
 ```ts
-const provider =
-  defineQueueProvider({
-    name:
-      'internal-mq',
+const provider = defineQueueProvider({
+  name: "internal-mq",
 
-    capabilities: {
-      kind:
-        'queue',
+  capabilities: {
+    kind: "queue",
 
-      publish:
-        true,
+    publish: true,
 
-      consume:
-        false,
-    },
+    consume: false,
+  },
 
-    async create(
-      config:
-        InternalConfig,
-    ) {
-      return {
-        name:
-          'internal-mq',
+  async create(config: InternalConfig) {
+    return {
+      name: "internal-mq",
 
-        capabilities: {
-          kind:
-            'queue',
+      capabilities: {
+        kind: "queue",
 
-          publish:
-            true,
+        publish: true,
 
-          consume:
-            false,
-        },
+        consume: false,
+      },
 
-        async publish(
-          destination,
-          message,
-        ) {
-          const res =
-            await fetch(
-              `${config.baseUrl}/${destination}`,
-              {
-                method:
-                  'POST',
+      async publish(destination, message) {
+        const res = await fetch(`${config.baseUrl}/${destination}`, {
+          method: "POST",
 
-                body:
-                  JSON.stringify(
-                    message,
-                  ),
-              },
-            );
+          body: JSON.stringify(message),
+        });
 
-          const native =
-            await res.json();
+        const native = await res.json();
 
-          return {
-            ok:
-              res.ok,
+        return {
+          ok: res.ok,
 
-            provider:
-              'internal-mq',
+          provider: "internal-mq",
 
-            messageId:
-              native.id,
+          messageId: native.id,
 
-            native,
-          };
-        },
-      };
-    },
-  });
+          native,
+        };
+      },
+    };
+  },
+});
 ```
 
 ---
@@ -3792,18 +3538,15 @@ Producer:
 
 ```ts
 await queues.publish(
-  'notifications.send',
+  "notifications.send",
 
   {
     payload: {
-      provider:
-        'email',
+      provider: "email",
 
-      recipient:
-        user.email,
+      recipient: user.email,
 
-      template:
-        'welcome',
+      template: "welcome",
     },
   },
 );
@@ -3840,18 +3583,14 @@ Large messages should not automatically be stored externally by QueueKit.
 But an optional pattern can use StorageKit:
 
 ```ts
-const object =
-  await storage.put(
-    largePayload,
-  );
+const object = await storage.put(largePayload);
 
 await queue.publish(
-  'video.process',
+  "video.process",
 
   {
     payload: {
-      storageKey:
-        object.key,
+      storageKey: object.key,
     },
   },
 );
@@ -3881,8 +3620,7 @@ Optional future integration:
 queue.use(
   createLargePayloadMiddleware({
     storage,
-    threshold:
-      200_000,
+    threshold: 200_000,
   }),
 );
 ```
@@ -4059,9 +3797,7 @@ interface QueueOptions {
 Good:
 
 ```ts
-interface PublishOptions<
-  TNative,
-> {
+interface PublishOptions<TNative> {
   delay?: number;
   priority?: number;
   native?: TNative;
@@ -4075,9 +3811,9 @@ interface PublishOptions<
 Bad:
 
 ```ts
-import 'bullmq';
-import 'kafkajs';
-import 'amqplib';
+import "bullmq";
+import "kafkajs";
+import "amqplib";
 ```
 
 inside root/core.
@@ -4095,14 +3831,14 @@ provider entrypoint loads provider dependency
 Normalized:
 
 ```ts
-result.ok
-result.messageId
+result.ok;
+result.messageId;
 ```
 
 Native:
 
 ```ts
-result.native
+result.native;
 ```
 
 ---
@@ -4110,7 +3846,7 @@ result.native
 ## Rule 4 — Preserve native consumed message
 
 ```ts
-context.message.native
+context.message.native;
 ```
 
 ---
@@ -4118,7 +3854,7 @@ context.message.native
 ## Rule 5 — Preserve native acknowledgement
 
 ```ts
-context.ack.native
+context.ack.native;
 ```
 
 where appropriate.
@@ -4164,7 +3900,7 @@ Node-specific APIs remain inside provider drivers.
 Avoid:
 
 ```ts
-any
+any;
 ```
 
 in public APIs.
@@ -4196,134 +3932,103 @@ without losing strongly typed provider-native options.
 # 100. Example Final Developer Experience
 
 ```ts
-import {
-  createQueueManager,
-} from '@mohamedhabibwork/queuekit';
+import { createQueueManager } from "@mohamedhabibwork/queuekit";
 
-const queues =
-  createQueueManager({
-    default:
-      'jobs',
+const queues = createQueueManager({
+  default: "jobs",
 
-    providers: {
-      jobs: {
-        type:
-          'bullmq',
+  providers: {
+    jobs: {
+      type: "bullmq",
 
-        connection: {
-          host:
-            'localhost',
+      connection: {
+        host: "localhost",
 
-          port:
-            6379,
-        },
-      },
-
-      events: {
-        type:
-          'kafka',
-
-        clientId:
-          'api',
-
-        brokers: [
-          'kafka:9092',
-        ],
-      },
-
-      messaging: {
-        type:
-          'rabbitmq',
-
-        url:
-          'amqp://rabbitmq',
-      },
-
-      streams: {
-        type:
-          'redis',
-
-        mode:
-          'streams',
-
-        url:
-          'redis://redis:6379',
-      },
-    },
-  });
-
-await queues
-  .provider('jobs')
-  .publish(
-    'emails',
-
-    {
-      payload: {
-        userId:
-          '123',
+        port: 6379,
       },
     },
 
-    {
-      native: {
-        attempts:
-          5,
+    events: {
+      type: "kafka",
 
-        backoff: {
-          type:
-            'exponential',
+      clientId: "api",
 
-          delay:
-            1000,
-        },
-      },
-    },
-  );
-
-await queues
-  .provider('events')
-  .publish(
-    'user.created',
-
-    {
-      payload: {
-        userId:
-          '123',
-      },
+      brokers: ["kafka:9092"],
     },
 
-    {
-      native: {
-        partition:
-          2,
+    messaging: {
+      type: "rabbitmq",
 
-        headers: {
-          source:
-            'api',
-        },
-      },
-    },
-  );
-
-await queues
-  .provider('messaging')
-  .publish(
-    'payments',
-
-    {
-      payload: {
-        paymentId:
-          'pay_123',
-      },
+      url: "amqp://rabbitmq",
     },
 
-    {
-      native: {
-        persistent:
-          true,
+    streams: {
+      type: "redis",
+
+      mode: "streams",
+
+      url: "redis://redis:6379",
+    },
+  },
+});
+
+await queues.provider("jobs").publish(
+  "emails",
+
+  {
+    payload: {
+      userId: "123",
+    },
+  },
+
+  {
+    native: {
+      attempts: 5,
+
+      backoff: {
+        type: "exponential",
+
+        delay: 1000,
       },
     },
-  );
+  },
+);
+
+await queues.provider("events").publish(
+  "user.created",
+
+  {
+    payload: {
+      userId: "123",
+    },
+  },
+
+  {
+    native: {
+      partition: 2,
+
+      headers: {
+        source: "api",
+      },
+    },
+  },
+);
+
+await queues.provider("messaging").publish(
+  "payments",
+
+  {
+    payload: {
+      paymentId: "pay_123",
+    },
+  },
+
+  {
+    native: {
+      persistent: true,
+    },
+  },
+);
 ```
 
 At each call site, TypeScript should know:

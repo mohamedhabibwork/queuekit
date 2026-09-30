@@ -1,47 +1,68 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Architecture — QueueKit</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css">
-</head>
-<body>
-<div class="layout">
-  <aside class="sidebar">
-    <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
-    <nav class="nav">
-      <div class="nav-label">Get started</div>
-      <a href="index.html">Overview</a>
-      <a href="examples.html">Examples</a>
-      <div class="nav-label">Reference</div>
-      <a href="providers.html">Provider semantics</a>
-      <a href="architecture.html" aria-current="page">Architecture</a>
-      <a href="custom-providers.html">Custom providers</a>
-      <a href="publishing.html">Publishing</a>
-    </nav>
-    <div class="sidebar-footer">
-      <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
-      <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
-    </div>
-  </aside>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Architecture — QueueKit</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css"
+    />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <a class="brand" href="index.html"><span class="brand-mark">QK</span>QueueKit</a>
+        <nav class="nav">
+          <div class="nav-label">Get started</div>
+          <a href="index.html">Overview</a>
+          <a href="examples.html">Examples</a>
+          <div class="nav-label">Reference</div>
+          <a href="providers.html">Provider semantics</a>
+          <a href="architecture.html" aria-current="page">Architecture</a>
+          <a href="custom-providers.html">Custom providers</a>
+          <a href="publishing.html">Publishing</a>
+        </nav>
+        <div class="sidebar-footer">
+          <a href="https://github.com/mohamedhabibwork/queuekit">GitHub ↗</a>
+          <a href="https://www.npmjs.com/package/@mohamedhabibwork/queuekit">npm ↗</a>
+        </div>
+      </aside>
 
-  <main class="content">
-    <h1>Architecture</h1>
-    <p class="lead">A small runtime-neutral core, and isolated provider adapters around it.</p>
+      <main class="content">
+        <h1>Architecture</h1>
+        <p class="lead">A small runtime-neutral core, and isolated provider adapters around it.</p>
 
-    <h2>Core</h2>
-    <p>The core owns message envelopes, codecs, middleware, consumers, lifecycle, errors, provider capabilities, registries, and the lazy manager. <strong>It never imports a broker SDK.</strong> That is what keeps QueueKit runnable on Node 20+, Bun, and Deno 2+ and installable with zero broker dependencies.</p>
+        <h2>Core</h2>
+        <p>
+          The core owns message envelopes, codecs, middleware, consumers, lifecycle, errors,
+          provider capabilities, registries, and the lazy manager.
+          <strong>It never imports a broker SDK.</strong> That is what keeps QueueKit runnable on
+          Node 20+, Bun, and Deno 2+ and installable with zero broker dependencies.
+        </p>
 
-    <h2>Adapters</h2>
-    <p>Every adapter preserves native configuration, responses, incoming messages, and acknowledgements through generic types. A provider advertises only capabilities that have real semantics for that broker. QueueKit does not translate Kafka partitions into priority, or a BullMQ attempt count into an SQS delivery guarantee — normalization stops where it would start lying.</p>
+        <h2>Adapters</h2>
+        <p>
+          Every adapter preserves native configuration, responses, incoming messages, and
+          acknowledgements through generic types. A provider advertises only capabilities that have
+          real semantics for that broker. QueueKit does not translate Kafka partitions into
+          priority, or a BullMQ attempt count into an SQS delivery guarantee — normalization stops
+          where it would start lying.
+        </p>
 
-    <h2>Lazy manager</h2>
-    <p><code>createQueueManager</code> constructs providers lazily. Calling <code>manager.provider('events')</code> is the point at which that provider may load its SDK; <code>warmup()</code> explicitly initializes all configured providers. <code>close()</code> is idempotent and closes initialized consumers and clients.</p>
+        <h2>Lazy manager</h2>
+        <p>
+          <code>createQueueManager</code> constructs providers lazily. Calling
+          <code>manager.provider('events')</code> is the point at which that provider may load its
+          SDK; <code>warmup()</code> explicitly initializes all configured providers.
+          <code>close()</code> is idempotent and closes initialized consumers and clients.
+        </p>
 
-    <h2>Repository layout</h2>
-    <div class="code-block"><span class="code-lang">text</span><pre><code class="language-text">src/
+        <h2>Repository layout</h2>
+        <div class="code-block">
+          <span class="code-lang">text</span>
+          <pre><code class="language-text">src/
   core/       envelope, codec, middleware, lifecycle, errors, types
   drivers/     kafka, rabbitmq, bullmq, redis, nats, sqs
   testing/     in-memory fake driver with deterministic controls
@@ -49,11 +70,18 @@
   registry.ts  typed destination/payload registries
   factory.ts   createQueue switch over BuiltInQueueConfig
 tests/
-  e2e/         produce → consume → acknowledge round-trips against live brokers</code></pre></div>
-    <p>The e2e suites run against a local broker stack (<code>docker compose up -d</code>: Redis, RabbitMQ, Kafka, NATS, LocalStack SQS) and skip with a hint when a broker is not reachable.</p>
-  </main>
-</div>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
-<script>window.hljs && hljs.highlightAll();</script>
-</body>
+  e2e/         produce → consume → acknowledge round-trips against live brokers</code></pre>
+        </div>
+        <p>
+          The e2e suites run against a local broker stack (<code>docker compose up -d</code>: Redis,
+          RabbitMQ, Kafka, NATS, LocalStack SQS) and skip with a hint when a broker is not
+          reachable.
+        </p>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+    <script>
+      window.hljs && hljs.highlightAll();
+    </script>
+  </body>
 </html>
