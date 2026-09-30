@@ -1,1 +1,3 @@
-export { createSqs, SqsProvider } from './drivers/sqs.js'; export type { SqsAcknowledgement, SqsConsumerOptions, SqsPublishOptions } from './drivers/sqs.js'; export type { SqsConfig } from './config.js';
+export { createSqs, SqsProvider } from "./drivers/sqs.js";
+export type { SqsAcknowledgement, SqsConsumerOptions, SqsPublishOptions } from "./drivers/sqs.js";
+export type { SqsConfig } from "./config.js";

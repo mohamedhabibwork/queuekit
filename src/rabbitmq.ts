@@ -1,1 +1,7 @@
-export { createRabbitMQ, RabbitMqProvider } from './drivers/rabbitmq.js'; export type { RabbitMqAcknowledgement, RabbitMqConsumerOptions, RabbitMqPublishOptions } from './drivers/rabbitmq.js'; export type { RabbitMqConfig } from './config.js';
+export { createRabbitMQ, RabbitMqProvider } from "./drivers/rabbitmq.js";
+export type {
+  RabbitMqAcknowledgement,
+  RabbitMqConsumerOptions,
+  RabbitMqPublishOptions,
+} from "./drivers/rabbitmq.js";
+export type { RabbitMqConfig } from "./config.js";
