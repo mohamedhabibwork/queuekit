@@ -2,8 +2,40 @@
   "name": "@mohamedhabibwork/queuekit",
   "version": "0.3.0",
   "description": "Runtime-neutral TypeScript queues, messaging, pub/sub, and streams without losing provider-native types.",
+  "keywords": [
+    "bullmq",
+    "bun",
+    "deno",
+    "kafka",
+    "messaging",
+    "nats",
+    "queue",
+    "rabbitmq",
+    "redis",
+    "sqs",
+    "typescript"
+  ],
+  "homepage": "https://mohamedhabibwork.github.io/queuekit/",
+  "bugs": {
+    "url": "https://github.com/mohamedhabibwork/queuekit/issues"
+  },
+  "license": "MIT",
+  "author": "Mohamed Habib",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohamedhabibwork/queuekit.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs",
+    "llms.txt"
+  ],
   "type": "module",
   "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -42,56 +74,41 @@
       "import": "./dist/testing.js"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=20"
-  },
-  "scripts": {
-    "build": "tsup",
-    "clean": "rimraf dist coverage",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e": "vitest run tests/e2e",
-    "test:types": "tsc -p tsconfig.typecheck.json --noEmit",
-    "check": "npm run build && npm run test && npm run test:types",
-    "pack:check": "npm pack --dry-run",
-    "prepublishOnly": "npm run clean && npm run check"
-  },
-  "keywords": [
-    "queue",
-    "messaging",
-    "kafka",
-    "rabbitmq",
-    "bullmq",
-    "redis",
-    "nats",
-    "sqs",
-    "typescript",
-    "deno",
-    "bun"
-  ],
-  "author": "Mohamed Habib",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mohamedhabibwork/queuekit.git"
-  },
-  "bugs": {
-    "url": "https://github.com/mohamedhabibwork/queuekit/issues"
-  },
-  "homepage": "https://mohamedhabibwork.github.io/queuekit/",
   "publishConfig": {
     "access": "public",
     "provenance": true
   },
-  "overrides": {
-    "esbuild": "^0.28.2"
+  "scripts": {
+    "build": "tsup",
+    "clean": "rimraf dist coverage",
+    "lint": "oxlint --deny-warnings --report-unused-disable-directives",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "vitest run tests/e2e",
+    "test:types": "tsc -p tsconfig.typecheck.json --noEmit",
+    "check": "npm run format:check && npm run lint && npm run build && npm run test && npm run test:types",
+    "pack:check": "npm pack --dry-run",
+    "prepublishOnly": "npm run clean && npm run check"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-sqs": "^3.1128.0",
+    "@types/amqplib": "^0.10.7",
+    "@types/node": "^26.0.0",
+    "amqplib": "^0.10.9",
+    "bullmq": "^6.3.4",
+    "ioredis": "^5.11.1",
+    "kafkajs": "^2.2.4",
+    "nats": "^2.29.3",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0",
+    "redis": "^6.2.1",
+    "rimraf": "^6.1.2",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "peerDependencies": {
     "@aws-sdk/client-sqs": "^3.1128.0",
@@ -125,18 +142,10 @@
       "optional": true
     }
   },
-  "devDependencies": {
-    "@aws-sdk/client-sqs": "^3.1128.0",
-    "@types/amqplib": "^0.10.7",
-    "amqplib": "^0.10.9",
-    "bullmq": "^6.3.4",
-    "ioredis": "^5.11.1",
-    "kafkajs": "^2.2.4",
-    "nats": "^2.29.3",
-    "redis": "^6.2.1",
-    "rimraf": "^6.1.2",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+  "overrides": {
+    "esbuild": "^0.28.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -58,7 +58,11 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1"]
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1",
+        ]
       interval: 5s
       timeout: 20s
       retries: 20
@@ -85,7 +89,13 @@ services:
       SERVICES: sqs
       DEBUG: "0"
     healthcheck:
-      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/4566 && printf 'GET /_localstack/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '200' <&3"]
+      test:
+        [
+          "CMD",
+          "bash",
+          "-c",
+          "exec 3<>/dev/tcp/localhost/4566 && printf 'GET /_localstack/health HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q '200' <&3",
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
