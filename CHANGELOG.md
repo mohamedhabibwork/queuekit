@@ -1,4 +1,21 @@
 # Changelog
+## v0.4.0 (2026-09-30)
+
+
+### Commits
+
+- e717f46 chore: release v0.4.0
+- 1d2c409 docs: format CHANGELOG
+- e90164e chore: update tooling, scripts and dependencies
+- d9b4837 docs: update README, guides and agent docs
+- 83a0e73 test: add architecture, peer-dependency and manager tests
+- e83ac11 refactor: restructure source modules for clean architecture
+- f422147 feat: accept optional loggerkit-compatible logger in managers
+- dd60884 ci: update GitHub workflows and repository templates
+- de15afc docs(changelog): release v0.3.0
+
+**Full Changelog**: https://github.com/mohamedhabibwork/queuekit/compare/v0.3.0...v0.4.0
+
 
 ## v0.3.0 (2026-09-21)
 
