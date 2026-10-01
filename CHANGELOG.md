@@ -1,6 +1,6 @@
 # Changelog
-## v0.4.0 (2026-09-30)
 
+## v0.4.0 (2026-09-30)
 
 ### Commits
 
@@ -15,7 +15,6 @@
 - de15afc docs(changelog): release v0.3.0
 
 **Full Changelog**: https://github.com/mohamedhabibwork/queuekit/compare/v0.3.0...v0.4.0
-
 
 ## v0.3.0 (2026-09-21)
 
