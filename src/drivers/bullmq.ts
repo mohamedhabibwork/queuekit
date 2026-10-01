@@ -1,5 +1,6 @@
 import type { JobsOptions, Job, WorkerOptions } from "bullmq";
 import { BaseQueueProvider } from "../core/base-provider.js";
+import { resolveDelay } from "../core/delay.js";
 import { createConsumer } from "../core/lifecycle.js";
 import { loadOptional } from "../core/load-optional.js";
 import type { BullMqConfig } from "../config.js";
@@ -72,7 +73,7 @@ export class BullMqProvider extends BaseQueueProvider<"bullmq"> {
           await this.#queue(destination)
         ).add(message.type ?? destination, message, {
           ...options?.native,
-          delay: options?.delay ?? options?.native?.delay,
+          delay: resolveDelay(options) ?? options?.native?.delay,
           priority: options?.priority ?? options?.native?.priority,
           jobId: options?.idempotencyKey ?? options?.native?.jobId,
         });

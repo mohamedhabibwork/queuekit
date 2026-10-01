@@ -6,6 +6,7 @@ import type {
 } from "@aws-sdk/client-sqs";
 import { BaseQueueProvider } from "../core/base-provider.js";
 import { asText, jsonCodec } from "../core/codec.js";
+import { resolveDelay } from "../core/delay.js";
 import { createConsumer } from "../core/lifecycle.js";
 import { loadOptional } from "../core/load-optional.js";
 import type { SqsConfig } from "../config.js";
@@ -89,8 +90,8 @@ export class SqsProvider extends BaseQueueProvider<"sqs"> {
             ...options?.native,
             QueueUrl: queueUrl,
             MessageBody: asText(jsonCodec.encode(message)),
-            DelaySeconds: options?.delay
-              ? Math.floor(options.delay / 1000)
+            DelaySeconds: resolveDelay(options)
+              ? Math.floor(resolveDelay(options)! / 1000)
               : options?.native?.DelaySeconds,
             MessageDeduplicationId:
               options?.idempotencyKey ?? options?.native?.MessageDeduplicationId,

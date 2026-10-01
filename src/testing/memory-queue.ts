@@ -68,6 +68,7 @@ export class MemoryQueue
     retries: true,
     ack: true,
     deadLetter: true,
+    scheduling: true,
   };
   readonly #messages = new Map<string, MemoryMessage[]>();
   readonly #pending = new Map<string, PendingEntry[]>();
@@ -75,6 +76,7 @@ export class MemoryQueue
   readonly #dead = new Map<string, MemoryMessage[]>();
   readonly #acknowledged = new Map<string, MemoryMessage[]>();
   readonly #failures = new Map<string, MemoryFailure[]>();
+  readonly #idempotency = new Map<string, MemoryMessage>();
   readonly #subscriptions = new Map<string, Set<Subscription>>();
   #sequence = 0;
   #latency = 0;
@@ -131,7 +133,10 @@ export class MemoryQueue
       this.#acknowledged.delete(key);
       this.#failures.delete(key);
     }
-    if (!destination) this.#sequence = 0;
+    if (!destination) {
+      this.#sequence = 0;
+      this.#idempotency.clear();
+    }
   }
 
   setLatency(milliseconds: number): void {
@@ -192,12 +197,29 @@ export class MemoryQueue
           this.#nextError = undefined;
           throw error;
         }
+        const duplicate = options?.idempotencyKey
+          ? this.#idempotency.get(`${destination}\u0000${options.idempotencyKey}`)
+          : undefined;
+        if (duplicate) {
+          result = {
+            ok: true,
+            provider: this.name,
+            messageId: duplicate.id,
+            native: duplicate as MemoryMessage<TPayload>,
+          };
+          return;
+        }
         if (this.#latency) await new Promise((resolve) => setTimeout(resolve, this.#latency));
         const stored: MemoryMessage<TPayload> = {
           ...message,
           id: message.id ?? `memory-${++this.#sequence}`,
           timestamp: message.timestamp ?? Date.now(),
         };
+        if (options?.idempotencyKey)
+          this.#idempotency.set(
+            `${destination}\u0000${options.idempotencyKey}`,
+            stored as MemoryMessage,
+          );
         const list = this.#messages.get(destination) ?? [];
         list.push(stored as MemoryMessage);
         this.#messages.set(destination, list);
