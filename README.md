@@ -48,6 +48,8 @@ QueueKit is framework-agnostic: enqueue with `publish()`, consume with a plain a
 
 See [framework integration](docs/frameworks.md) and [end-to-end examples](docs/examples.md) for copy-paste snippets.
 
+**[Use cases](docs/use-cases.md)** — 26 recipes with examples: delayed/scheduled/recurring jobs, retries with backoff (`withRetry`), dead letters, handler timeouts (`withTimeout`), idempotent consumers (`withIdempotency`), deduplicated publishing, batching, fan-out, backpressure, graceful shutdown (`gracefulShutdown`), middleware, typed registries, and testing.
+
 ## Usage
 
 ```ts

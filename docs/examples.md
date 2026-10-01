@@ -129,6 +129,7 @@ Run: `npx vitest`.
 
 ## Where to next
 
+- [Use cases](use-cases.md) — every supported pattern with an example.
 - [Framework integration](frameworks.md) — Express, Fastify, NestJS, Hono, Next.js, Elysia recipes.
 - [Architecture](ARCHITECTURE.md) — layer map and how optional peers load on creation.
 - README — the full provider table and custom-provider registration.

@@ -117,3 +117,16 @@ real broker in CI.
 - Guides: ./docs/frameworks.md (Express, Fastify, NestJS, Hono, Next.js,
   Elysia), ./docs/examples.md (end-to-end producer/worker apps),
   ./docs/ARCHITECTURE.md (layer map, optional-peer loading)
+
+## Consumer patterns (provider-agnostic)
+
+```ts
+import { withRetry, withTimeout, withIdempotency, scheduleRecurring, gracefulShutdown } from "@mohamedhabibwork/queuekit";
+
+const consumer = await queue.consume("jobs", withRetry(withTimeout(handler, 10_000), { attempts: 5, backoff: { type: "exponential", delay: 1_000 } }));
+await queue.consume("orders", withIdempotency(handler, { store, ttl: 86_400_000 })); // store: { has, set }
+const job = scheduleRecurring(queue, "metrics", { payload: {} }, { every: 30_000 }); job.stop();
+gracefulShutdown({ consumers: [consumer], queues: [queue], timeout: 30_000 });
+```
+
+`scheduleAt` is converted to a delay for BullMQ and SQS. Full recipes: docs/use-cases.md.

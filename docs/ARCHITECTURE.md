@@ -7,12 +7,12 @@ dependency loaded dynamically at creation time, so consumers install only what t
 
 Dependencies point one way, bottom-up:
 
-| Layer                     | Contents                                                                             | May depend on                        |
-| ------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------ |
-| `src/core/`               | Base provider, codec, errors, lifecycle, `loadOptional`, types                       | itself only                          |
-| `src/drivers/<provider>/` | One file per provider (bullmq, kafka, nats, rabbitmq, redis, sqs)                    | core, root `config.ts`, its own file |
-| `src/testing/`            | In-memory reference implementation                                                   | core, config, itself — never drivers |
-| `src/*.ts` (root)         | Composition: index, config, errors, factory, manager, registry, per-provider facades | anything                             |
+| Layer                     | Contents                                                                                                                          | May depend on                        |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| `src/core/`               | Base provider, codec, errors, lifecycle, `loadOptional`, types, handler wrappers (retry/timeout/idempotency), recurring, shutdown | itself only                          |
+| `src/drivers/<provider>/` | One file per provider (bullmq, kafka, nats, rabbitmq, redis, sqs)                                                                 | core, root `config.ts`, its own file |
+| `src/testing/`            | In-memory reference implementation                                                                                                | core, config, itself — never drivers |
+| `src/*.ts` (root)         | Composition: index, config, errors, factory, manager, registry, per-provider facades                                              | anything                             |
 
 These rules are enforced by `tests/architecture.test.ts`: it walks every file under `src/`,
 resolves each relative import, and fails when a layer reaches outside its boundary. If a
