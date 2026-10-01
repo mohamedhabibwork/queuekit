@@ -52,6 +52,9 @@ export class NatsProvider extends BaseQueueProvider<"nats"> {
       token: this.config.token,
       user: this.config.user,
       pass: this.config.pass,
+      // nats.js has no boolean in its TlsOptions: `true` → required-TLS
+      // ({}), `false` → explicitly disabled (null).
+      tls: toNatsTls(this.config.tls),
     });
     return this.#connection;
   }
@@ -142,6 +145,15 @@ export class NatsProvider extends BaseQueueProvider<"nats"> {
     await this.#connection?.drain();
     this.#connection = undefined;
   }
+}
+/** nats.js has no boolean in its TlsOptions: `true` → required-TLS ({}), `false` → disabled (null). */
+function toNatsTls(
+  tls: boolean | object | undefined,
+): object | null | undefined {
+  if (tls === undefined) return undefined;
+  if (tls === true) return {};
+  if (tls === false) return null;
+  return tls;
 }
 export async function createNats(config: NatsConfig): Promise<NatsProvider> {
   return new NatsProvider(config);

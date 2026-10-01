@@ -106,10 +106,24 @@ interface PubsubSubscription {
   quit(): Promise<void>;
 }
 
+/** Only `redis://` and `rediss://` (TLS) URLs are accepted. */
+function assertRedisUrl(url: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error("redis url must be a valid redis:// or rediss:// URL.");
+  }
+  if (parsed.protocol !== "redis:" && parsed.protocol !== "rediss:") {
+    throw new Error(`redis url must use redis:// or rediss:// (got ${parsed.protocol}).`);
+  }
+  return url;
+}
+
 async function connectCommandClient(config: RedisConfig): Promise<CommandClient> {
   if (config.client === "ioredis") {
     const Redis = (await loadOptional<typeof import("ioredis")>("ioredis", "redis")).default;
-    const client = new Redis(config.url, { maxRetriesPerRequest: null });
+    const client = new Redis(assertRedisUrl(config.url), { maxRetriesPerRequest: null });
     await client.ping();
     // ioredis overloads `call`; a plain rest binding keeps the spread legal.
     const call = client.call.bind(client) as (...args: string[]) => Promise<unknown>;
@@ -122,7 +136,7 @@ async function connectCommandClient(config: RedisConfig): Promise<CommandClient>
     };
   }
   const { createClient } = await loadOptional<typeof import("redis")>("redis", "redis");
-  const client = createClient({ url: config.url });
+  const client = createClient({ url: assertRedisUrl(config.url) });
   client.on("error", () => undefined);
   await client.connect();
   return {
@@ -142,7 +156,7 @@ async function openPubsubSubscription(
 ): Promise<PubsubSubscription> {
   if (config.client === "ioredis") {
     const Redis = (await loadOptional<typeof import("ioredis")>("ioredis", "redis")).default;
-    const subscriber = new Redis(config.url);
+    const subscriber = new Redis(assertRedisUrl(config.url));
     subscriber.on("message", (_channel, message) => onMessage(message));
     await subscriber.subscribe(channel);
     return {
@@ -155,7 +169,7 @@ async function openPubsubSubscription(
     };
   }
   const { createClient } = await loadOptional<typeof import("redis")>("redis", "redis");
-  const subscriber = createClient({ url: config.url });
+  const subscriber = createClient({ url: assertRedisUrl(config.url) });
   subscriber.on("error", () => undefined);
   await subscriber.connect();
   await subscriber.subscribe(channel, (message) => onMessage(message));

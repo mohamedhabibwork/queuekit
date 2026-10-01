@@ -56,7 +56,8 @@ export class SqsProvider extends BaseQueueProvider<"sqs"> {
     const { SQSClient } = await this.#module();
     this.#client = new SQSClient({
       region: this.config.region,
-      endpoint: this.config.endpoint,
+      endpoint:
+        this.config.endpoint === undefined ? undefined : validateEndpoint(this.config.endpoint),
       credentials: this.config.credentials as never,
     });
     return this.#client;
@@ -206,6 +207,23 @@ export class SqsProvider extends BaseQueueProvider<"sqs"> {
     this.#client?.destroy();
     this.#client = undefined;
   }
+}
+/**
+ * Custom SQS endpoints must be https (the SDK sends credentials there);
+ * plain http is only allowed for loopback hosts (LocalStack-style setups).
+ */
+function validateEndpoint(endpoint: string): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    throw new Error("sqs endpoint must be a valid https URL.");
+  }
+  const loopback = ["localhost", "127.0.0.1", "[::1]", "::1"].includes(parsed.hostname);
+  if (parsed.protocol !== "https:" && !(parsed.protocol === "http:" && loopback)) {
+    throw new Error("sqs endpoint must use https (http is allowed only for loopback hosts).");
+  }
+  return endpoint;
 }
 export async function createSqs(config: SqsConfig): Promise<SqsProvider> {
   return new SqsProvider(config);

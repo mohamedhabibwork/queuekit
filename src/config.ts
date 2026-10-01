@@ -35,6 +35,8 @@ export interface RabbitMqConfig {
         readonly username?: string;
         readonly password?: string;
         readonly vhost?: string;
+        /** Use `amqps://` (TLS); port defaults to 5671 when unset. */
+        readonly tls?: boolean;
       };
   readonly heartbeat?: number;
 }
@@ -55,6 +57,8 @@ export interface NatsConfig {
   readonly token?: string;
   readonly user?: string;
   readonly pass?: string;
+  /** Passed straight to nats.js `connect` (e.g. `{ ca: [...] }`); `tls: true` requires TLS. */
+  readonly tls?: boolean | object;
   readonly mode?: "core" | "jetstream";
 }
 export interface SqsConfig {

@@ -190,12 +190,30 @@ export class RabbitMqProvider extends BaseQueueProvider<"rabbitmq"> {
     this.#connection = undefined;
   }
 }
+/**
+ * Only `amqp`/`amqps` connection URLs are accepted so a mistyped scheme
+ * can't silently hand credentials to another protocol handler; object form
+ * opts into TLS with `tls: true` (port defaults to 5671 for amqps).
+ */
 function toUrl(value: RabbitMqConfig["url"]): string {
-  if (typeof value === "string") return value;
+  if (typeof value === "string") {
+    let parsed: URL;
+    try {
+      parsed = new URL(value);
+    } catch {
+      throw new Error("rabbitmq url must be a valid amqp:// or amqps:// URL.");
+    }
+    if (parsed.protocol !== "amqp:" && parsed.protocol !== "amqps:") {
+      throw new Error(`rabbitmq url must use amqp:// or amqps:// (got ${parsed.protocol}).`);
+    }
+    return value;
+  }
+  const secure = value.tls ?? false;
+  const scheme = secure ? "amqps" : "amqp";
   const auth = value.username
     ? `${encodeURIComponent(value.username)}:${encodeURIComponent(value.password ?? "")}@`
     : "";
-  return `amqp://${auth}${value.hostname}:${value.port ?? 5672}/${encodeURIComponent(value.vhost ?? "")}`;
+  return `${scheme}://${auth}${value.hostname}:${value.port ?? (secure ? 5671 : 5672)}/${encodeURIComponent(value.vhost ?? "")}`;
 }
 export async function createRabbitMQ(config: RabbitMqConfig): Promise<RabbitMqProvider> {
   return new RabbitMqProvider(config);
