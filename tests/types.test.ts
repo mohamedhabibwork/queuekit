@@ -27,5 +27,29 @@ async function typeExamples(): Promise<void> {
   await fake.publish("events", { payload: { id: "1" } }, { delay: 100 });
   const pendingIds: Array<string | undefined> = fake.pending("events").map((message) => message.id);
   void pendingIds;
+  const cloudflare = await createQueue({
+    type: "cloudflare",
+    queueId: "queue-id",
+    accountId: "account",
+    apiToken: "token",
+  });
+  await cloudflare.publish("orders", { payload: {} }, { native: { delaySeconds: 5 } });
+  const azure = await createQueue({
+    type: "azureservicebus",
+    connectionString: "Endpoint=sb://example/;SharedAccessKey=k",
+  });
+  await azure.publish("jobs", { payload: {} }, { delay: 1_000 });
+  const gcp = await createQueue({ type: "gcpubsub", projectId: "p", topic: "events" });
+  await gcp.publish("events", { payload: {} }, { native: { orderingKey: "k" } });
+  const managed = createQueueManager({
+    providers: {
+      push: { type: "cloudflare", queueId: "queue-id", accountId: "a", apiToken: "t" },
+      bus: { type: "azureservicebus", connectionString: "Endpoint=sb://x/;SharedAccessKey=k" },
+      fanout: { type: "gcpubsub", projectId: "p", topic: "t" },
+    },
+  });
+  const bus = await managed.provider("bus");
+  await bus.publish("jobs", { payload: {} });
+  void managed;
 }
 void typeExamples;

@@ -147,9 +147,7 @@ export class NatsProvider extends BaseQueueProvider<"nats"> {
   }
 }
 /** nats.js has no boolean in its TlsOptions: `true` → required-TLS ({}), `false` → disabled (null). */
-function toNatsTls(
-  tls: boolean | object | undefined,
-): object | null | undefined {
+function toNatsTls(tls: boolean | object | undefined): object | null | undefined {
   if (tls === undefined) return undefined;
   if (tls === true) return {};
   if (tls === false) return null;

@@ -5,7 +5,8 @@ Guidance for AI coding agents (and humans) working in this repository.
 ## What this is
 
 **QueueKit** (`@mohamedhabibwork/queuekit`) — runtime-neutral queues, messaging, pub/sub, and
-streams (Kafka, RabbitMQ, BullMQ, Redis, NATS, SQS) behind one typed contract. Zero runtime
+streams (Kafka, RabbitMQ, BullMQ, Redis, NATS, SQS, Cloudflare Queues, Google Cloud Pub/Sub,
+Azure Service Bus) behind one typed contract. Zero runtime
 dependencies; provider SDKs are optional peers loaded only when that provider is created; a
 full in-memory provider covers dev and tests. Node >= 20, Bun, Deno; dual ESM/CJS.
 

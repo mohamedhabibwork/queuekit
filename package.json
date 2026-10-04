@@ -5,13 +5,18 @@
   "keywords": [
     "bullmq",
     "bun",
+    "cloudflare",
+    "cloudflare-queues",
     "deno",
+    "google-cloud",
     "kafka",
     "messaging",
     "nats",
+    "pubsub",
     "queue",
     "rabbitmq",
     "redis",
+    "service-bus",
     "sqs",
     "typescript"
   ],
@@ -65,6 +70,18 @@
       "types": "./dist/sqs.d.ts",
       "import": "./dist/sqs.js"
     },
+    "./cloudflare": {
+      "types": "./dist/cloudflare.d.ts",
+      "import": "./dist/cloudflare.js"
+    },
+    "./gcpubsub": {
+      "types": "./dist/gcpubsub.d.ts",
+      "import": "./dist/gcpubsub.js"
+    },
+    "./azureservicebus": {
+      "types": "./dist/azureservicebus.d.ts",
+      "import": "./dist/azureservicebus.js"
+    },
     "./custom": {
       "types": "./dist/custom.d.ts",
       "import": "./dist/custom.js"
@@ -95,6 +112,8 @@
   },
   "devDependencies": {
     "@aws-sdk/client-sqs": "^3.1128.0",
+    "@azure/service-bus": "^7.9.5",
+    "@google-cloud/pubsub": "^6.1.0",
     "@types/amqplib": "^0.10.7",
     "@types/node": "^26.0.0",
     "amqplib": "^0.10.9",
@@ -112,6 +131,8 @@
   },
   "peerDependencies": {
     "@aws-sdk/client-sqs": "^3.1128.0",
+    "@azure/service-bus": "^7.9.5",
+    "@google-cloud/pubsub": "^6.1.0",
     "amqplib": "^0.10.9",
     "bullmq": "^6.3.4",
     "ioredis": "^5.6.1",
@@ -121,6 +142,12 @@
   },
   "peerDependenciesMeta": {
     "@aws-sdk/client-sqs": {
+      "optional": true
+    },
+    "@azure/service-bus": {
+      "optional": true
+    },
+    "@google-cloud/pubsub": {
       "optional": true
     },
     "amqplib": {

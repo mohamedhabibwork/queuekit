@@ -10,7 +10,7 @@ Dependencies point one way, bottom-up:
 | Layer                     | Contents                                                                                                                          | May depend on                        |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | `src/core/`               | Base provider, codec, errors, lifecycle, `loadOptional`, types, handler wrappers (retry/timeout/idempotency), recurring, shutdown | itself only                          |
-| `src/drivers/<provider>/` | One file per provider (bullmq, kafka, nats, rabbitmq, redis, sqs)                                                                 | core, root `config.ts`, its own file |
+| `src/drivers/<provider>/` | One file per provider (azureservicebus, bullmq, cloudflare, gcpubsub, kafka, nats, rabbitmq, redis, sqs)                          | core, root `config.ts`, its own file |
 | `src/testing/`            | In-memory reference implementation                                                                                                | core, config, itself — never drivers |
 | `src/*.ts` (root)         | Composition: index, config, errors, factory, manager, registry, per-provider facades                                              | anything                             |
 

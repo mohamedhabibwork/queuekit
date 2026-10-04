@@ -1,7 +1,10 @@
 import { QueueConfigError } from "./core/errors.js";
 import type {
+  AzureServiceBusConfig,
   BuiltInQueueConfig,
   BullMqConfig,
+  CloudflareConfig,
+  GooglePubSubConfig,
   KafkaConfig,
   MemoryConfig,
   NatsConfig,
@@ -9,7 +12,10 @@ import type {
   RedisConfig,
   SqsConfig,
 } from "./config.js";
+import type { AzureServiceBusProvider } from "./drivers/azureservicebus.js";
 import type { BullMqProvider } from "./drivers/bullmq.js";
+import type { CloudflareProvider } from "./drivers/cloudflare.js";
+import type { GooglePubSubProvider } from "./drivers/gcpubsub.js";
 import type { KafkaProvider } from "./drivers/kafka.js";
 import type { MemoryQueue } from "./testing/memory-queue.js";
 import type { NatsProvider } from "./drivers/nats.js";
@@ -30,7 +36,13 @@ export type QueueForConfig<TConfig> = TConfig extends MemoryConfig
             ? NatsProvider
             : TConfig extends SqsConfig
               ? SqsProvider
-              : never;
+              : TConfig extends CloudflareConfig
+                ? CloudflareProvider
+                : TConfig extends GooglePubSubConfig
+                  ? GooglePubSubProvider
+                  : TConfig extends AzureServiceBusConfig
+                    ? AzureServiceBusProvider
+                    : never;
 export async function createQueue<const TConfig extends BuiltInQueueConfig>(
   config: TConfig,
 ): Promise<QueueForConfig<TConfig>> {
@@ -63,6 +75,18 @@ export async function createQueue<const TConfig extends BuiltInQueueConfig>(
       return (await import("./drivers/sqs.js")).createSqs(config) as Promise<
         QueueForConfig<TConfig>
       >;
+    case "cloudflare":
+      return (await import("./drivers/cloudflare.js")).createCloudflare(config) as Promise<
+        QueueForConfig<TConfig>
+      >;
+    case "gcpubsub":
+      return (await import("./drivers/gcpubsub.js")).createGooglePubSub(config) as Promise<
+        QueueForConfig<TConfig>
+      >;
+    case "azureservicebus":
+      return (await import("./drivers/azureservicebus.js")).createAzureServiceBus(
+        config,
+      ) as Promise<QueueForConfig<TConfig>>;
     default:
       throw new QueueConfigError(
         `Unsupported queue provider: ${(config as { type: string }).type}.`,

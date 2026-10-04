@@ -14,7 +14,7 @@
 
 Runtime-neutral TypeScript infrastructure for job queues, message queues, pub/sub, and streams—without erasing provider-native capabilities and types.
 
-QueueKit supports Node.js 20+, Bun, and Deno 2+ for its runtime-neutral core. Version `0.1` ships adapters for BullMQ, Kafka, RabbitMQ, Redis (Pub/Sub and Streams), NATS Core, and Amazon SQS. Each SDK is an optional peer dependency and loads only when that provider is created.
+QueueKit supports Node.js 20+, Bun, and Deno 2+ for its runtime-neutral core. Version `0.1` ships adapters for BullMQ, Kafka, RabbitMQ, Redis (Pub/Sub and Streams), NATS Core, Amazon SQS, Cloudflare Queues, Google Cloud Pub/Sub, and Azure Service Bus. Each SDK is an optional peer dependency and loads only when that provider is created (the Cloudflare driver needs no SDK — it speaks the Queues REST API over `fetch`).
 
 ## Install
 
@@ -99,16 +99,39 @@ await (
 
 ## Providers
 
-| Provider   | Entrypoint                            | Family                        |
-| ---------- | ------------------------------------- | ----------------------------- |
-| BullMQ     | `@mohamedhabibwork/queuekit/bullmq`   | Job queue                     |
-| Kafka      | `@mohamedhabibwork/queuekit/kafka`    | Event stream                  |
-| RabbitMQ   | `@mohamedhabibwork/queuekit/rabbitmq` | Message queue                 |
-| Redis      | `@mohamedhabibwork/queuekit/redis`    | Pub/Sub or stream             |
-| NATS       | `@mohamedhabibwork/queuekit/nats`     | Pub/Sub; JetStream publishing |
-| Amazon SQS | `@mohamedhabibwork/queuekit/sqs`      | Message queue                 |
+| Provider             | Entrypoint                                   | Family                                      |
+| -------------------- | -------------------------------------------- | ------------------------------------------- |
+| BullMQ               | `@mohamedhabibwork/queuekit/bullmq`          | Job queue                                   |
+| Kafka                | `@mohamedhabibwork/queuekit/kafka`           | Event stream                                |
+| RabbitMQ             | `@mohamedhabibwork/queuekit/rabbitmq`        | Message queue                               |
+| Redis                | `@mohamedhabibwork/queuekit/redis`           | Pub/Sub or stream                           |
+| NATS                 | `@mohamedhabibwork/queuekit/nats`            | Pub/Sub; JetStream publishing               |
+| Amazon SQS           | `@mohamedhabibwork/queuekit/sqs`             | Message queue                               |
+| Cloudflare Queues    | `@mohamedhabibwork/queuekit/cloudflare`      | Message queue (REST API or Workers binding) |
+| Google Cloud Pub/Sub | `@mohamedhabibwork/queuekit/gcpubsub`        | Pub/sub                                     |
+| Azure Service Bus    | `@mohamedhabibwork/queuekit/azureservicebus` | Message queue                               |
 
 See the [documentation site](https://mohamedhabibwork.github.io/queuekit/) for capabilities and acknowledgement semantics. BullMQ no longer bundles a Redis client: when `connection` is a URL string, also install `ioredis` (`npm install bullmq ioredis`). The Redis provider works with both `node-redis` (default) and `ioredis` (`client: 'ioredis'`), against Redis and Valkey servers, and Streams consumers can dead-letter rejected entries with `native.deadLetter`.
+
+The cloud drivers keep provider-native handles under `native`: SQS/Service Bus expose the SDK client, Pub/Sub the `PubSub` instance, and Cloudflare the optional Workers binding. Cloudflare Queues works from any runtime — publish over the REST API (`accountId` + `apiToken`) or through a Workers binding (`binding: env.MY_QUEUE`) inside a Worker, and consume with the pull API:
+
+```ts
+import { createQueue } from "@mohamedhabibwork/queuekit";
+
+const queue = await createQueue({
+  type: "cloudflare",
+  queueId: "your-queue-id",
+  accountId: process.env.CF_ACCOUNT_ID,
+  apiToken: process.env.CF_QUEUES_TOKEN, // Queues read + write
+});
+
+await queue.publish("orders", { payload: { orderId: "ord_9" } }, { delay: 30_000 });
+
+const consumer = await queue.consume("orders", async ({ message, ack }) => {
+  await fulfill(message.payload.orderId);
+  // return => ack; throw => immediate retry; ack.retry({ delay }) schedules one
+});
+```
 
 ## Custom providers and tests
 

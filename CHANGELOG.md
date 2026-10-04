@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- feat: add Cloudflare Queues provider — REST push/push-batch/pull/ack over `fetch` (no SDK), optional Workers binding for in-Worker publish, delay seconds, lease-based ack/retry
+- feat: add Google Cloud Pub/Sub provider (`@google-cloud/pubsub` optional peer) — publishMessage, subscription consumers with ack/nack
+- feat: add Azure Service Bus provider (`@azure/service-bus` optional peer) — sendMessages, scheduled enqueue, peekLock settlement with complete/abandon/dead-letter
+
 ## v0.4.0 (2026-09-30)
 
 ### Commits

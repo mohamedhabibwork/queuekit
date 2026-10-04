@@ -1,18 +1,20 @@
 # queuekit (@mohamedhabibwork/queuekit)
 
-> Runtime-neutral TypeScript queues, messaging, pub/sub, and streams for Node.js >= 20, Bun, and Deno — Kafka, RabbitMQ, BullMQ, Redis, NATS, and AWS SQS behind one typed contract, without losing provider-native types. The package installs with zero dependencies; provider SDKs are optional peers loaded dynamically only when that provider is created. A full in-memory provider covers development and tests with nothing installed. Dual ESM/CJS with full TypeScript declarations.
+> Runtime-neutral TypeScript queues, messaging, pub/sub, and streams for Node.js >= 20, Bun, and Deno — Kafka, RabbitMQ, BullMQ, Redis, NATS, AWS SQS, Cloudflare Queues, Google Cloud Pub/Sub, and Azure Service Bus behind one typed contract, without losing provider-native types. The package installs with zero dependencies; provider SDKs are optional peers loaded dynamically only when that provider is created (the Cloudflare driver uses `fetch` and needs no SDK). A full in-memory provider covers development and tests with nothing installed. Dual ESM/CJS with full TypeScript declarations.
 
 ## Install
 
 ```bash
 npm install @mohamedhabibwork/queuekit
 # Add only the provider SDK you use (optional peers, loaded on creation):
-npm install kafkajs        # or: bullmq, ioredis, amqplib, nats, redis, @aws-sdk/client-sqs
+npm install kafkajs        # or: bullmq, ioredis, amqplib, nats, redis, @aws-sdk/client-sqs,
+                           #     @google-cloud/pubsub, @azure/service-bus (Cloudflare: no SDK)
 ```
 
 **Entrypoints**: root (factory, manager, registry, config, errors, codec,
 middleware), `.../kafka`, `.../rabbitmq`, `.../bullmq`, `.../redis`, `.../nats`,
-`.../sqs`, `.../custom`, `.../testing` (in-memory queue + fake).
+`.../sqs`, `.../cloudflare`, `.../gcpubsub`, `.../azureservicebus`, `.../custom`,
+`.../testing` (in-memory queue + fake).
 
 A missing optional SDK throws `QueueConfigError` whose message contains the
 exact `npm install <pkg>` command — never a module-not-found crash.
@@ -42,6 +44,9 @@ const consumer = await queue.consume("emails", async ({ message }) => {
 | Kafka | `kafka` | `kafkajs` | consumer groups, partitions |
 | NATS | `nats` | `nats` | core + queue groups |
 | SQS | `sqs` | `@aws-sdk/client-sqs` | standard + FIFO queues |
+| Cloudflare Queues | `cloudflare` | none (fetch) | REST push/pull/ack; Workers binding publish; delay_seconds |
+| Google Cloud Pub/Sub | `gcpubsub` | `@google-cloud/pubsub` | subscriptions, ordering keys, server-side DLQ policy |
+| Azure Service Bus | `azureservicebus` | `@azure/service-bus` | peekLock settlement, scheduled messages, sessions |
 | Custom | `custom` / `defineQueueProvider` | — | register against the same contract |
 
 ## Core API
@@ -129,4 +134,4 @@ const job = scheduleRecurring(queue, "metrics", { payload: {} }, { every: 30_000
 gracefulShutdown({ consumers: [consumer], queues: [queue], timeout: 30_000 });
 ```
 
-`scheduleAt` is converted to a delay for BullMQ and SQS. Full recipes: docs/use-cases.md.
+`scheduleAt` is converted to a delay for BullMQ, SQS, Cloudflare Queues (delay_seconds), and Azure Service Bus (scheduledEnqueueTimeUtc); Google Cloud Pub/Sub has no per-message delay. Full recipes: docs/use-cases.md.
