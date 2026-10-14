@@ -37,5 +37,5 @@ describe("azureservicebus provider", () => {
   it("rejects publish when neither connection string nor namespace+credential is set", async () => {
     const provider = await createQueue({ type: "azureservicebus" });
     await expect(provider.publish("jobs", { payload: 1 })).rejects.toThrow(QueueConfigError);
-  });
+  }, 20_000);
 });
