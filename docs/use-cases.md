@@ -398,6 +398,7 @@ import { createLogger } from "@mohamedhabibwork/loggerkit";
 import { createQueueManager } from "@mohamedhabibwork/queuekit";
 
 const queues = createQueueManager({
+  default: "jobs",
   providers: { jobs: { type: "memory" } },
   logger: createLogger({ name: "queue" }),
 });

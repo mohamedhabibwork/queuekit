@@ -1794,6 +1794,7 @@ Must support:
 
 ```ts
 const manager = createQueueManager({
+  default: "jobsRedis",
   providers: {
     primaryKafka: {
       type: "kafka",
